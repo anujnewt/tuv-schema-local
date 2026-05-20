@@ -1,0 +1,42 @@
+-- DMAP_OBJECT_GEN_TAG : TYPE : EDITIONABLE NAME : xxmor_funcional_pkg_mor_enc_rec_type
+SET search_path = xxmor,oracle,dmap_extension,public;
+
+CREATE TYPE xxmor_funcional_pkg_mor_enc_rec_type AS (
+ID_SOLICITUD       NUMERIC := NULL,
+                       ID_REQUEST         NUMERIC := NULL,
+                       ID_SEG_NEG         NUMERIC := NULL,
+                       ID_FZA_VENTAS      NUMERIC := NULL,
+                       ID_SOLICITUD_HNA   NUMERIC := NULL,
+                       PROC_POR_LINEA     varchar := NULL,
+                       GARANTIZADO        varchar := NULL,
+                       ADVID              varchar := NULL,
+                       MCONTID            varchar := NULL,
+                       MCONTID_CUTIN      varchar := NULL,
+                       EMAIL              varchar := NULL,
+                       AGYESTNUM          varchar := NULL,
+                       ACCTHDRID          varchar := NULL,
+                       RTCRDDSCR          varchar := NULL,
+                       RTCRD              varchar := NULL,
+                       RTCRDDSCR_CUTIN    varchar := NULL,
+                       RTCRD_CUTIN        varchar := NULL,
+                       COMENTARIOS        varchar := NULL,
+                       SECNUM             varchar := NULL,
+                       PLATAFORMA_CANAL   varchar := NULL,
+                       AGRUPADOR          varchar := NULL,
+                       PRDID_DESC         varchar := NULL,
+                       PRDID              varchar := NULL,
+                       TOTAL_SPOTS        varchar := NULL,
+                       TOTAL_SIN_DESC     varchar := NULL,
+                       TOTAL_CON_DESC     varchar := NULL,
+                       TIPO_FACTURACION   varchar := NULL,
+                       DESCUENTO          varchar := NULL,
+                       TARGET             varchar := NULL,
+                       ORDEN_ESTATUS      varchar := NULL,
+                       FECHA_CONCOM       varchar := NULL,
+                       TRACKING_ID_CONCOM varchar := NULL,
+                       CREATED_DATE       TIMESTAMP WITHOUT TIME ZONE := NULL,
+                       CREATED_BY         varchar := NULL,
+                       UPDATED_DATE       TIMESTAMP WITHOUT TIME ZONE := NULL,
+                       UPDATED_BY         varchar := NULL
+
+);
