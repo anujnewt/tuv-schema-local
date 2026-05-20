@@ -1,0 +1,113 @@
+CREATE OR REPLACE FORCE NONEDITIONABLE VIEW "LABPROD"."R_CIFCON" ("RCT_KEYCON", "RCT_DESCON", "RCT_KEYPRO", "RCT_KEYPER", "RCT_CODIMP", "RCT_DIAPER", "P3", "P5", "P10", "P12", "P17", "P18", "P28", "P29", "P30", "P31", "P32", "P33", "P34", "P35", "P37", "P38", "P39", "P40", "P44", "P45", "P46", "P47", "P48", "P49", "P51", "P52", "P60", "P66", "P77", "P78", "P79", "P81", "P94", "P95", "P139", "P169", "P248", "P259", "P260", "P261", "P262", "P263", "P264", "P265", "P266", "P267", "P268", "P269", "P270", "P291", "P385", "P386", "P387", "P388", "P389", "P390", "P391", "P392", "P393", "P395", "P396", "P397", "P398", "P399", "P401", "P402", "P403", "P405", "P409", "P410", "P411", "P427", "P434", "P441", "P444", "P537", "P538", "P543", "P545", "P546") AS 
+  SELECT "RCT_KEYCON","RCT_DESCON","RCT_KEYPRO","RCT_KEYPER","RCT_CODIMP","RCT_DIAPER","P3","P5","P10","P12","P17","P18","P28","P29","P30","P31","P32","P33","P34","P35","P37","P38","P39","P40","P44","P45","P46","P47","P48","P49","P51","P52","P60","P66","P77","P78","P79","P81","P94","P95","P139","P169","P248","P259","P260","P261","P262","P263","P264","P265","P266","P267","P268","P269","P270","P291","P385","P386","P387","P388","P389","P390","P391","P392","P393","P395","P396","P397","P398","P399","P401","P402","P403","P405","P409","P410","P411","P427","P434","P441","P444","P537","P538","P543","P545","P546"
+FROM
+ (
+     SELECT *
+     FROM
+     (
+         SELECT MOV_KEYCON RCT_KEYCON,
+                CON_DESCON RCT_DESCON,
+                MOV_KEYPRO RCT_KEYPRO,
+                'P'||MOV_KEYPRO RCT_DESPRO,
+                MOV_KEYPER RCT_KEYPER,
+                MOV_CODIMP RCT_CODIMP,
+                MOV_IMPORT RCT_IMPORT,
+                PRO_DIAPER RCT_DIAPER
+         FROM LABPROD.NMWKMOVT
+         LEFT JOIN LABPROD.NMLOCONC ON CON_KEYCON = MOV_KEYCON
+         LEFT JOIN LABPROD.NMLOPROC ON PRO_KEYPRO = MOV_KEYPRO
+         WHERE 1=1
+         AND MOV_KEYPRO
+         IN (SELECT PAM_CVESEC
+             FROM LABPROD.GLCOPAMS
+             WHERE 2=2 AND
+             PAM_KEYPAR='CTCO'
+             )
+    ) PIVOT
+    (
+        SUM(RCT_IMPORT)
+        FOR RCT_DESPRO IN
+(
+    'P3' P3,
+    'P5' P5,
+    'P10' P10,
+    'P12' P12,
+    'P17' P17,
+    'P18' P18,
+    'P28' P28,
+    'P29' P29,
+    'P30' P30,
+    'P31' P31,
+    'P32' P32,
+    'P33' P33,
+    'P34' P34,
+    'P35' P35,
+    'P37' P37,
+    'P38' P38,
+    'P39' P39,
+    'P40' P40,
+    'P44' P44,
+    'P45' P45,
+    'P46' P46,
+    'P47' P47,
+    'P48' P48,
+    'P49' P49,
+    'P51' P51,
+    'P52' P52,
+    'P60' P60,
+    'P66' P66,
+    'P77' P77,
+    'P78' P78,
+    'P79' P79,
+    'P81' P81,
+    'P94' P94,
+    'P95' P95,
+    'P139' P139,
+    'P169' P169,
+    'P248' P248,
+    'P259' P259,
+    'P260' P260,
+    'P261' P261,
+    'P262' P262,
+    'P263' P263,
+    'P264' P264,
+    'P265' P265,
+    'P266' P266,
+    'P267' P267,
+    'P268' P268,
+    'P269' P269,
+    'P270' P270,
+    'P291' P291,
+    'P385' P385,
+    'P386' P386,
+    'P387' P387,
+    'P388' P388,
+    'P389' P389,
+    'P390' P390,
+    'P391' P391,
+    'P392' P392,
+    'P393' P393,
+    'P395' P395,
+    'P396' P396,
+    'P397' P397,
+    'P398' P398,
+    'P399' P399,
+    'P401' P401,
+    'P402' P402,
+    'P403' P403,
+    'P405' P405,
+    'P409' P409,
+    'P410' P410,
+    'P411' P411,
+    'P427' P427,
+    'P434' P434,
+    'P441' P441,
+    'P444' P444,
+    'P537' P537,
+    'P538' P538,
+    'P543' P543,
+    'P545' P545,
+    'P546' P546
+)
+    )
+);

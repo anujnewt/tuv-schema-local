@@ -1,0 +1,3 @@
+CREATE TABLE "LABPROD"."PASEXEP" 
+   (	"PAS_KEYEMP" NUMBER(*,0)
+   ) ;

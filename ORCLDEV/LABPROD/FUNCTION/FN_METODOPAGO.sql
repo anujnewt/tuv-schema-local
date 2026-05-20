@@ -1,0 +1,86 @@
+CREATE OR REPLACE NONEDITIONABLE FUNCTION "LABPROD"."FN_METODOPAGO" 
+(
+  KEYEMP IN NUMBER,
+  KEYPRO IN NUMBER,
+  KEYPER IN VARCHAR2,
+  FORPAG IN VARCHAR2,
+  FORVAL IN VARCHAR2
+) RETURN VARCHAR2 AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+NETO NUMBER;
+VALE NUMBER;
+RESULTADO VARCHAR2(20);
+BEGIN
+  IF FORPAG = 'NA' THEN
+    RETURN 'NA';
+  END IF;
+  SELECT
+    SUM(CASE WHEN pam_folini = 'NETO' THEN his_import ELSE 0 END) NETO,
+    SUM(CASE WHEN pam_folini = 'VALE' THEN his_import ELSE 0 END) VALE
+    INTO NETO,VALE
+  FROM LABPROD.nmlohism
+  INNER JOIN LABPROD.glcopams ON pam_keypar = 'METP' AND pam_cvesec = his_keycon
+  WHERE his_keypro = KEYPRO
+    AND his_keyper = KEYPER
+    AND his_keyemp = KEYEMP;
+  IF VALE = 0 THEN
+    RESULTADO := FORPAG;
+  ELSIF NETO = 0 THEN
+    RESULTADO := FORVAL;
+  ELSIF NETO >= VALE THEN
+    RESULTADO := FORPAG||','||FORVAL;
+  ELSE
+    RESULTADO := FORVAL||','||FORPAG;
+  END IF;
+  RETURN RESULTADO;
+END FN_METODOPAGO;
+/
+--Source_DDLS
+
+  CREATE OR REPLACE NONEDITIONABLE FUNCTION "LABPROD"."FN_METODOPAGO" 
+(
+  KEYEMP IN NUMBER,
+  KEYPRO IN NUMBER,
+  KEYPER IN VARCHAR2,
+  FORPAG IN VARCHAR2,
+  FORVAL IN VARCHAR2
+) RETURN VARCHAR2 AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+NETO NUMBER;
+VALE NUMBER;
+RESULTADO VARCHAR2(20);
+BEGIN
+  IF FORPAG = 'NA' THEN
+    RETURN 'NA';
+  END IF;
+  SELECT
+    SUM(CASE WHEN pam_folini = 'NETO' THEN his_import ELSE 0 END) NETO,
+    SUM(CASE WHEN pam_folini = 'VALE' THEN his_import ELSE 0 END) VALE
+    INTO NETO,VALE
+  FROM LABPROD.nmlohism
+  INNER JOIN LABPROD.glcopams ON pam_keypar = 'METP' AND pam_cvesec = his_keycon
+  WHERE his_keypro = KEYPRO
+    AND his_keyper = KEYPER
+    AND his_keyemp = KEYEMP;
+  IF VALE = 0 THEN
+    RESULTADO := FORPAG;
+  ELSIF NETO = 0 THEN
+    RESULTADO := FORVAL;
+  ELSIF NETO >= VALE THEN
+    RESULTADO := FORPAG||','||FORVAL;
+  ELSE
+    RESULTADO := FORVAL||','||FORPAG;
+  END IF;
+  RETURN RESULTADO;
+END FN_METODOPAGO;
+/
