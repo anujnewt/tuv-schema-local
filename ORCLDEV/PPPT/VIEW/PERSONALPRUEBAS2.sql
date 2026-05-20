@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."PERSONALPRUEBAS2" ("PRUEBA", "X", "FECHA", "IDPRUEBA", "IDPUESTO", "IDPERSONAL") AS 
+  SELECT Pruebas.Prueba, PersonalPruebas.Resultado AS x, PersonalPruebas.Fecha, PuestosPruebas.IdPrueba, PuestosPruebas.IdPuesto, PersonalPruebas.IdPersonal FROM (Pruebas INNER JOIN PuestosPruebas ON Pruebas.IdPrueba = PuestosPruebas.IdPrueba) LEFT JOIN PersonalPruebas ON PuestosPruebas.IdPrueba = PersonalPruebas.IdPrueba;

@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."PERSONALEXPERIENCIA" ("IDPERSONAL", "EMPRESA", "GIRO", "DOMICILIO", "TELEFONO", "PUESTO", "FUNCION", "EXPERIENCIA", "JEFEINMEDIATO", "SUELDO", "SUELDOF", "DE", "A") AS 
+  SELECT Laboral.IdPersonal, Laboral.Empresa, Laboral.Giro, Laboral.Domicilio, Laboral.Telefono, Laboral.Puesto, Laboral.Funcion, CatExperiencia.Experiencia, Laboral.JefeInmediato, Laboral.Sueldo, Laboral.SueldoF, Laboral.De, Laboral.A FROM Laboral LEFT JOIN CatExperiencia ON Laboral.Funcion = CatExperiencia.IdExperiencia;

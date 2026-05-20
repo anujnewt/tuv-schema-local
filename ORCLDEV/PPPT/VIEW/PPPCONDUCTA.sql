@@ -1,0 +1,3 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."PPPCONDUCTA" ("IDCONDUCTA", "IDCOMPETENCIA", "PESO", "CONDUCTA", "NIVEL") AS 
+  SELECT     IdConducta, IdCompetencia, Peso, Conducta, Niveles AS Nivel
+FROM         CatConductasObs360;

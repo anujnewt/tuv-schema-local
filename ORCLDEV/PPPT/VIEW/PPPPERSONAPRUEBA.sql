@@ -1,0 +1,3 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."PPPPERSONAPRUEBA" ("IDPERSONA", "IDPRUEBA", "FECHA", "RESULTADO") AS 
+  SELECT     IdPersonal AS IdPersona, IdPrueba, Fecha, Resultados AS Resultado
+FROM         PersonaPruebaH;

@@ -1,0 +1,3 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."PPPPERFIL" ("IDPERFIL", "PERFIL", "NIVEL", "IDEMPRESA", "BATERIA", "IDNIVEL", "NOTAPERFIL") AS 
+  SELECT IdPuesto AS IdPerfil, Puesto AS Perfil, Nivel, IdEmpresa, Bateria, IdNivel, NotaPerfil
+FROM Puestos;

@@ -1,0 +1,4 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."PPPPERSONAPERFIL" ("IDPERFIL", "IDPERSONA") AS 
+  SELECT     Puesto AS IdPerfil, IdPersonal AS IdPersona
+FROM         Personal
+WHERE     (Puesto IS NOT NULL AND Puesto > 0);

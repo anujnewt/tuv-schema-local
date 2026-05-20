@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."COMPATIBILIDADREPORTE" ("IDPUESTO", "IDPERSONAL") AS 
+  SELECT (Compatibilidad.IdPuesto*-1) AS IdPuesto, Compatibilidad.IdPersonal FROM Compatibilidad;

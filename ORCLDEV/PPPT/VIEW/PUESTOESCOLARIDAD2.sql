@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."PUESTOESCOLARIDAD2" ("IDPUESTO", "IDESCOLARIDAD", "ESCOLARIDAD", "PESO", "ESPECIALIDAD") AS 
+  SELECT PuestoEscolaridad.IdPuesto, PuestoEscolaridad.IdEscolaridad, CatEscolaridad.Escolaridad, PuestoEscolaridad.Peso, CatEscolaridad.Especialidad FROM PuestoEscolaridad INNER JOIN CatEscolaridad ON PuestoEscolaridad.IdEscolaridad = CatEscolaridad.IdEscolaridad;

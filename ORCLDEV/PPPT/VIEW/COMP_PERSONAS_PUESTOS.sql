@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."COMP_PERSONAS_PUESTOS" ("IDPERSONAL", "IDPUESTO", "NOMBRE", "PUESTO", "TOTAL") AS 
+  SELECT Compatibilidad.IdPersonal, Compatibilidad.IdPuesto, Personal.Nombre, Puestos.Puesto, Compatibilidad.Total FROM (Compatibilidad INNER JOIN Puestos ON Compatibilidad.IdPuesto = Puestos.IdPuesto) INNER JOIN Personal ON Compatibilidad.IdPersonal = Personal.IdPersonal;

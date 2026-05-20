@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "PPPT"."PERSONALPUESTOEXPERIENCIA" ("IDPUESTO", "IDEXPERIENCIA", "EXPERIENCIA", "PESO", "IDPERSONAL") AS 
+  SELECT PuestoExperiencia.IdPuesto, PuestoExperiencia.IdExperiencia, CatExperiencia.Experiencia, PuestoExperiencia.Peso, Laboral.IdPersonal FROM (PuestoExperiencia LEFT JOIN CatExperiencia ON PuestoExperiencia.IdExperiencia = CatExperiencia.IdExperiencia) INNER JOIN Laboral ON PuestoExperiencia.IdExperiencia = Laboral.Funcion;
