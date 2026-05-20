@@ -1,0 +1,66 @@
+CREATE OR REPLACE EDITIONABLE FUNCTION "XXMOR"."XXMOR_GET_RTCRDDESC_FN" (P_ID_SOLICITUD NUMBER)
+RETURN  VARCHAR2 AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+RESULTADO VARCHAR2(350);
+BEGIN
+    SELECT REPLACE(E.RTCRDDSCR, AM.CA_RTCRD_SUBSTR, AM.CA_RTCRD_AUX)
+    INTO RESULTADO
+    FROM  XXMOR_SOLICITUDES_ENC_TAB E,
+          XXMOR_CAT_AGRUPADOR_MULT_TAB AM
+    WHERE ID_SOLICITUD     = P_ID_SOLICITUD
+      AND E.AGRUPADOR      = AM.AGRUPADOR_MULTIPLE
+      AND AM.PREFIJO_CANAL = (
+                              SELECT SUBSTR(STNID,0,2)
+                              FROM XXMOR_SOLICITUDES_DET_TAB D
+                              WHERE D.ID_SOLICITUD = E.ID_SOLICITUD
+                                AND ROWNUM         = 1
+                              );
+    RETURN RESULTADO;
+    EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                RETURN NULL;
+            WHEN TOO_MANY_ROWS THEN
+                RETURN NULL;
+            WHEN OTHERS THEN
+                RETURN NULL;
+END XXMOR_GET_RTCRDDESC_FN;
+/
+--Source_DDLS
+
+  CREATE OR REPLACE EDITIONABLE FUNCTION "XXMOR"."XXMOR_GET_RTCRDDESC_FN" (P_ID_SOLICITUD NUMBER)
+RETURN  VARCHAR2 AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+RESULTADO VARCHAR2(350);
+BEGIN
+    SELECT REPLACE(E.RTCRDDSCR, AM.CA_RTCRD_SUBSTR, AM.CA_RTCRD_AUX)
+    INTO RESULTADO
+    FROM  XXMOR_SOLICITUDES_ENC_TAB E,
+          XXMOR_CAT_AGRUPADOR_MULT_TAB AM
+    WHERE ID_SOLICITUD     = P_ID_SOLICITUD
+      AND E.AGRUPADOR      = AM.AGRUPADOR_MULTIPLE
+      AND AM.PREFIJO_CANAL = (
+                              SELECT SUBSTR(STNID,0,2)
+                              FROM XXMOR_SOLICITUDES_DET_TAB D
+                              WHERE D.ID_SOLICITUD = E.ID_SOLICITUD
+                                AND ROWNUM         = 1
+                              );
+    RETURN RESULTADO;
+    EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                RETURN NULL;
+            WHEN TOO_MANY_ROWS THEN
+                RETURN NULL;
+            WHEN OTHERS THEN
+                RETURN NULL;
+END XXMOR_GET_RTCRDDESC_FN;
+/

@@ -1,0 +1,44 @@
+CREATE OR REPLACE EDITIONABLE FUNCTION "XXMOR"."XXMOR_GET_AGRUPADOR_MULT_FN" (P_ID_SOLICITUD NUMBER)
+RETURN  NUMBER AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+RESULTADO NUMBER;
+BEGIN
+    SELECT COUNT(AGRUPADOR_MULTIPLE)
+    INTO   RESULTADO
+    FROM   XXMOR_CAT_AGRUPADOR_MULT_TAB
+    WHERE  AGRUPADOR_MULTIPLE = (
+                                 SELECT TRIM(AGRUPADOR)
+                                 FROM  XXMOR_SOLICITUDES_ENC_TAB
+                                 WHERE ID_SOLICITUD = P_ID_SOLICITUD
+                                 );
+    RETURN RESULTADO;
+END XXMOR_GET_AGRUPADOR_MULT_FN;
+/
+--Source_DDLS
+
+  CREATE OR REPLACE EDITIONABLE FUNCTION "XXMOR"."XXMOR_GET_AGRUPADOR_MULT_FN" (P_ID_SOLICITUD NUMBER)
+RETURN  NUMBER AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+RESULTADO NUMBER;
+BEGIN
+    SELECT COUNT(AGRUPADOR_MULTIPLE)
+    INTO   RESULTADO
+    FROM   XXMOR_CAT_AGRUPADOR_MULT_TAB
+    WHERE  AGRUPADOR_MULTIPLE = (
+                                 SELECT TRIM(AGRUPADOR)
+                                 FROM  XXMOR_SOLICITUDES_ENC_TAB
+                                 WHERE ID_SOLICITUD = P_ID_SOLICITUD
+                                 );
+    RETURN RESULTADO;
+END XXMOR_GET_AGRUPADOR_MULT_FN;
+/

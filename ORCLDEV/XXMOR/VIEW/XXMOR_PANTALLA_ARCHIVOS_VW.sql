@@ -1,0 +1,17 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "XXMOR"."XXMOR_PANTALLA_ARCHIVOS_VW" ("ID_ARCHIVO_SOL", "ID_SEG_NEG", "NOM_ARCHIVO_SOL", "ESTATUS", "DESC_ESTATUS", "NUM_ORDENES", "OBSERVACIONES", "CREATE_DATE", "CREATED_BY", 
+	 CONSTRAINT "XXMOR_PANTALLA_ARCHIVOS_PK" PRIMARY KEY ("ID_ARCHIVO_SOL") RELY DISABLE) AS 
+  SELECT SA.ID_ARCHIVO_SOL,
+       SA.ID_SEG_NEG,
+       SA.NOM_ARCHIVO_SOL,
+       SA.ARCHIVO_PROCESADO ESTATUS,
+       DECODE(SA.ARCHIVO_PROCESADO, 1,    'En Espera a Ser Procesado'
+                                  , 2,    'En Proceso'
+                                  , 3,    'Con Errores o Inconsistencias'
+                                  , 4,    'Archivo leido, ir a Estatus'
+             ) DESC_ESTATUS,
+       SA.NUM_ORDENES,
+       SA.OBSERVACIONES,
+       TO_CHAR(SA.CREATED_DATE, 'YYYY-MM-DD HH24:MI') CREATE_DATE,
+       SA.CREATED_BY
+FROM   XXMOR_SOLICITUDES_ARCH_TAB SA
+WHERE  SA.ID_SEG_NEG = 1;
