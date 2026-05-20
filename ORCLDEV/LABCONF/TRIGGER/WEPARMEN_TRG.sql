@@ -1,0 +1,11 @@
+CREATE OR REPLACE EDITIONABLE TRIGGER "LABCONF"."WEPARMEN_TRG" 
+  BEFORE INSERT ON LABCONF.weparmen
+  FOR EACH ROW
+  BEGIN
+      SELECT NVL(:new.wep_cvemen,weparmen_seq.nextval) INTO :new.wep_cvemen FROM dual;
+  END;
+
+
+
+/
+ALTER TRIGGER "LABCONF"."WEPARMEN_TRG" ENABLE;

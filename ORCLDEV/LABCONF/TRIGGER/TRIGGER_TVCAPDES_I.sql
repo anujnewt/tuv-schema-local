@@ -1,0 +1,12 @@
+CREATE OR REPLACE EDITIONABLE TRIGGER "LABCONF"."TRIGGER_TVCAPDES_I" 
+before insert on LABCONF.TVCAPDES_I
+for each row
+begin
+select SEQU_CAPDES_I.nextval into :new.ORDERID2 from dual;
+end;
+
+
+
+
+/
+ALTER TRIGGER "LABCONF"."TRIGGER_TVCAPDES_I" ENABLE;

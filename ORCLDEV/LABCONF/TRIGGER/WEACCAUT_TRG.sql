@@ -1,0 +1,11 @@
+CREATE OR REPLACE EDITIONABLE TRIGGER "LABCONF"."WEACCAUT_TRG" 
+  BEFORE INSERT ON LABCONF.weaccaut
+  FOR EACH ROW
+  BEGIN
+      SELECT NVL(:new.wea_idusua, weaccaut_seq.nextval) INTO :new.wea_idusua FROM dual;
+  END;
+
+
+
+/
+ALTER TRIGGER "LABCONF"."WEACCAUT_TRG" ENABLE;

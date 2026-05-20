@@ -1,0 +1,11 @@
+CREATE OR REPLACE EDITIONABLE TRIGGER "LABCONF"."WEBITACT_TRG" 
+  BEFORE INSERT ON LABCONF.webitact
+  FOR EACH ROW
+  BEGIN
+      SELECT NVL(:new.wct_idbact, webitact_seq.nextval) INTO :new.wct_idbact FROM dual;
+  END;
+
+
+
+/
+ALTER TRIGGER "LABCONF"."WEBITACT_TRG" ENABLE;

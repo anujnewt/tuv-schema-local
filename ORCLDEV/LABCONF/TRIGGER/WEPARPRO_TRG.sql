@@ -1,0 +1,11 @@
+CREATE OR REPLACE EDITIONABLE TRIGGER "LABCONF"."WEPARPRO_TRG" 
+  BEFORE INSERT ON LABCONF.weparpro
+  FOR EACH ROW
+  BEGIN
+      SELECT NVL(:new.pro_cvepro,weparpro_seq.nextval) INTO :new.pro_cvepro FROM dual;
+  END;
+
+
+
+/
+ALTER TRIGGER "LABCONF"."WEPARPRO_TRG" ENABLE;

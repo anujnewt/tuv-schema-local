@@ -1,0 +1,11 @@
+CREATE OR REPLACE EDITIONABLE TRIGGER "LABCONF"."WEPARDET_TRG" 
+  BEFORE INSERT ON LABCONF.wepardet
+  FOR EACH ROW
+  BEGIN
+      SELECT NVL(:new.det_cvedet,wepardet_seq.nextval) INTO :new.det_cvedet FROM dual;
+  END;
+
+
+
+/
+ALTER TRIGGER "LABCONF"."WEPARDET_TRG" ENABLE;
