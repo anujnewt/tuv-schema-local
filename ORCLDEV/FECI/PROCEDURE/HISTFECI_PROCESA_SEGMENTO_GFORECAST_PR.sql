@@ -1,0 +1,66 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "FECI"."HISTFECI_PROCESA_SEGMENTO_GFORECAST_PR" AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+  v_id_segmento FECI_SEGMENTO_CAT.ID_SEGMENTO%TYPE;
+  v_id_grupo_forecast FECI_GRUPO_FORECAST_CAT.ID_GRUPO_FORECAST%TYPE;
+  CONTADOR NUMBER;
+BEGIN
+  FOR rec IN (SELECT COD_SEGMENTO, DES_SEGMENTO, COD_GRUPO_FORECAST, DES_GRUPO_FORECAST
+              FROM HISTFECI_RECIBOS_MASIVO_TAB)
+  LOOP
+    -- Verificar si el segmento ya existe
+    BEGIN
+        SELECT ID_SEGMENTO INTO v_id_segmento
+        FROM FECI_SEGMENTO_CAT
+        WHERE COD_SEGMENTO = rec.COD_SEGMENTO;
+    EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+            v_id_segmento := NULL;
+    END;
+    IF v_id_segmento IS NULL THEN
+      -- Insertar el segmento si no existe
+      INSERT INTO FECI_SEGMENTO_CAT
+      (COD_SEGMENTO, DES_SEGMENTO,COD_MONEDA,IND_CPS,FEC_CREACION,FEC_ULT_MODIFICACION,ID_USUARIO_CREACION,
+      ID_USUARIO_ULT_MODIF,IND_ESTADO,IND_PAIS)
+      VALUES (rec.COD_SEGMENTO, rec.DES_SEGMENTO,'MXN',1,SYSDATE,SYSDATE,0,0,1,1);
+      -- Obtener el ID del segmento reci?insertado
+      SELECT ID_SEGMENTO INTO v_id_segmento
+      FROM FECI_SEGMENTO_CAT
+      WHERE TRIM(COD_SEGMENTO) = TRIM(rec.COD_SEGMENTO);
+    END IF;
+    BEGIN
+        SELECT NVL(ID_GRUPO_FORECAST, NULL)
+    INTO v_id_grupo_forecast
+    FROM FECI_GRUPO_FORECAST_CAT
+    WHERE COD_GRUPO_FORECAST = rec.COD_GRUPO_FORECAST AND IND_ESTADO = 1 ;
+    EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+            v_id_segmento := NULL;
+    END;
+    IF v_id_grupo_forecast IS NULL THEN
+      -- Insertar el grupo forecast si no existe
+      INSERT INTO FECI_GRUPO_FORECAST_CAT
+      (COD_GRUPO_FORECAST, DES_GRUPO_FORECAST, FEC_CREACION, FEC_ULT_MODIFICACION, ID_USUARIO_CREACION,
+       ID_USUARIO_ULT_MODIF, IND_ESTADO)
+      VALUES (rec.COD_GRUPO_FORECAST, rec.DES_GRUPO_FORECAST, SYSDATE, SYSDATE, 0, 0, 1);
+      -- Obtener el ID del grupo forecast reci?insertado
+      SELECT  NVL(ID_GRUPO_FORECAST, NULL) INTO v_id_grupo_forecast
+      FROM FECI_GRUPO_FORECAST_CAT
+      WHERE COD_GRUPO_FORECAST = rec.COD_GRUPO_FORECAST;
+    END IF;
+    -- Verificar si el registro ya existe en FECI_GRFC_SEGM_CAT
+    SELECT COUNT(*) INTO CONTADOR
+    FROM FECI_GRFC_SEGM_CAT WHERE ID_SEGMENTO = v_id_segmento AND ID_GRUPO_FORECAST = v_id_grupo_forecast ;
+    IF(CONTADOR=0) THEN
+      -- Insertar el registro en FECI_GRFC_SEGM_CAT si no existe
+      INSERT INTO FECI_GRFC_SEGM_CAT (ID_SEGMENTO, ID_GRUPO_FORECAST, FEC_CREACION, FEC_ULT_MODIFICACION, ID_USUARIO_CREACION, ID_USUARIO_ULT_MODIF, IND_ESTADO)
+      VALUES (v_id_segmento, v_id_grupo_forecast, SYSDATE, SYSDATE, 0, 0, 1);
+    END IF;
+  END LOOP;
+  COMMIT;
+END;
+/

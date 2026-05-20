@@ -1,0 +1,23 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "FECI"."FECI_MODIFICA_ESTIMACION_PR" 
+(
+        p_ID                NUMBER,
+        p_ID_USUARIO         NUMBER,
+        p_IMPORTE_MXN         NUMBER,
+        p_IMPORTE_USD        NUMBER
+)
+IS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+BEGIN
+      UPDATE FECI_ESTIMACION_TAB
+      SET NUM_IMPORTE_MXN = p_IMPORTE_MXN,
+      NUM_IMPORTE_USD = p_IMPORTE_USD,
+      FEC_ULT_MODIFICACION = SYSDATE,
+      ID_USUARIO_ULT_MODIF = p_ID_USUARIO
+      WHERE ID_ESTIMACION = p_ID;
+END FECI_MODIFICA_ESTIMACION_PR ;
+/

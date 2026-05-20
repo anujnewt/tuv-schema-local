@@ -1,0 +1,32 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "FECI"."FECI_OBTENER_ESTIMACIONES_PR" 
+(
+        p_ANIO         NUMBER,
+        p_MES        NUMBER
+)
+IS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+feci_cursor SYS_REFCURSOR;
+BEGIN
+       OPEN feci_cursor FOR
+            SELECT
+            EST.ID_ESTIMACION ,
+            EST.NUM_IMPORTE_MXN AS MONTO_MXN ,
+            EST.NUM_IMPORTE_USD AS MONTO_USD,
+            EST.NUM_ANIO,
+            EST.NUM_MES,
+            EST.COD_GRUPO_FORECAST,
+            EST.COD_SEGMENTO,NUM_SEMANA,
+            FORE.DES_GRUPO_FORECAST,
+            SEG.DES_SEGMENTO
+            FROM FECI_ESTIMACION_TAB  EST
+            INNER JOIN FECI_GRUPO_FORECAST_CAT  FORE ON EST.COD_GRUPO_FORECAST = FORE.COD_GRUPO_FORECAST
+            INNER JOIN FECI_SEGMENTO_CAT  SEG ON EST.COD_SEGMENTO = SEG.COD_SEGMENTO
+            WHERE NUM_ANIO = p_ANIO AND NUM_MES = p_MES;
+       DBMS_SQL.RETURN_RESULT(feci_cursor);
+END FECI_OBTENER_ESTIMACIONES_PR ;
+/

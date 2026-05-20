@@ -1,0 +1,25 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "FECI"."FECI_VALIDA_SEMANAS_PR" 
+(
+    p_MES         NUMBER,
+    p_ANIO         NUMBER,
+    p_RESPUESTA  OUT NUMBER
+)
+IS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+    CONTADOR        NUMBER;
+    RESPUESTA    NUMBER;
+BEGIN
+        SELECT COUNT(ID_ESTIMACION) INTO CONTADOR  FROM FECI_ESTIMACION_TAB WHERE NUM_ANIO = p_ANIO AND NUM_MES=p_MES;
+        IF CONTADOR > 0 THEN
+            RESPUESTA :=-1;
+        ELSE
+            RESPUESTA := CONTADOR;
+        END IF;
+        p_RESPUESTA := RESPUESTA;
+END FECI_VALIDA_SEMANAS_PR;
+/

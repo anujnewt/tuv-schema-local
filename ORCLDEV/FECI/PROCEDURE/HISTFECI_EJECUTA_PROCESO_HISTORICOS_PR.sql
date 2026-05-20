@@ -1,0 +1,16 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "FECI"."HISTFECI_EJECUTA_PROCESO_HISTORICOS_PR" AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+BEGIN
+    -- Llamada a los procedimientos almacenados sin parametros de entrada
+    HISTFECI_PROCESA_CATALOGOS_PR;
+    HISTFECI_PROCESA_SEGMENTO_GFORECAST_PR;
+    HISTFECI_PROCESA_CONCEPTO_REGION_PR;
+    HISTFECI_PROCESA_RECIBOS_PR;
+    HISTFECI_PROCESA_CLASIFICACIONES_PR;
+END;
+/

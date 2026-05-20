@@ -1,0 +1,25 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "FECI"."FECI_OBTENER_TIPO_CAMBIO_FECHA_PR" 
+(
+    p_FECHA       DATE
+)
+AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+feci_cursor SYS_REFCURSOR;
+BEGIN
+   open feci_cursor for
+        SELECT
+         ID_TIPO_CAMBIO,FEC_FECHA_TC,COD_MONEDA,NUM_VALOR,
+         FEC_CREACION,FEC_ULT_MODIFICACION,ID_USUARIO_CREACION,
+         ID_USUARIO_ULT_MODIF,IND_ESTADO
+         FROM FECI_TIPO_CAMBIO_CAT
+        WHERE
+        FEC_FECHA_TC = TO_DATE(TO_CHAR(p_FECHA, 'yyyy-MM-dd'), 'yyyy-MM-dd')
+        AND IND_ESTADO =1 ;
+    DBMS_SQL.RETURN_RESULT(feci_cursor);
+END FECI_OBTENER_TIPO_CAMBIO_FECHA_PR;
+/
