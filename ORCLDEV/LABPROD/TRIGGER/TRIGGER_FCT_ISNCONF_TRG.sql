@@ -1,0 +1,11 @@
+CREATE OR REPLACE FUNCTION trigger_fct_isnconf_trg() RETURNS trigger AS $body$
+BEGIN
+<<COLUMN_SEQUENCES>>
+BEGIN
+IF TG_OP = 'INSERT' AND NULLIF(NEW.IDCONFIG::text, '') IS NULL THEN
+SELECT nextval('labprod.isnconf_seq') INTO STRICT NEW.IDCONFIG;
+END IF;END;
+RETURN NEW;
+END
+$body$
+LANGUAGE 'plpgsql';

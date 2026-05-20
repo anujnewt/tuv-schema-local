@@ -1,0 +1,33 @@
+-- dmap_object_gen_tag : type : table name : xxhr_trasp_emp_candidatos
+set search_path = labprod,oracle,dmap_extension,public;
+create table "xxhr_trasp_emp_candidatos"  (
+no_candidato varchar(30),
+no_empleado varchar(30),
+sexo varchar(30),
+curp varchar(30),
+rfc varchar(150),
+imss varchar(150),
+fecha_contratacion varchar(10),
+fecha_nacimiento varchar(10),
+ciudad_nacimiento varchar(90),
+pais_de_nacimiento varchar(90),
+nacionalidad varchar(30),
+estado_civil varchar(30),
+correo_electronico varchar(240),
+clave_infonavit varchar(150),
+permiso_migratorio varchar(150),
+fecha_de_antiguedad varchar(150),
+fecha_de_venc_del_contrato varchar(150),
+fecha_planta varchar(150),
+fecha_de_reingreso varchar(150),
+submovimiento varchar(150),
+dias_de_venc_del_contrato varchar(150),
+fecha_venc_permiso_migratorio varchar(150),
+forma_de_pago varchar(150),
+cuenta_bancaria varchar(150),
+sucursal varchar(150),
+descuento_infonavit varchar(150),
+usuario_mam varchar(150),
+estatus_interface varchar(1),
+fecha_interface timestamp(0)
+) ;

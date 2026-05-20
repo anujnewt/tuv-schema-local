@@ -1,0 +1,60 @@
+-- dmap_object_gen_tag : type : table name : api_eocoplza
+set search_path = labprod,oracle,dmap_extension,public;
+create table "api_eocoplza"  (
+id_transaccion varchar(30) not null,
+plz_keyplz numeric(38) not null,
+plz_keysol numeric(38),
+plz_keypro numeric(38),
+plz_keyest varchar(3),
+plz_keydep varchar(16),
+plz_keypue varchar(16),
+plz_keycen varchar(16),
+plz_keycat varchar(16),
+plz_keyloc varchar(16),
+plz_keyims varchar(14),
+plz_tipplz varchar(3),
+plz_tipcon varchar(1),
+plz_contra varchar(3),
+plz_fecini timestamp(0),
+plz_fecfin timestamp(0),
+plz_turnop numeric(38),
+plz_keyhor varchar(16),
+plz_keyemp numeric(38),
+plz_cveuoc numeric(38),
+plz_titula numeric(38),
+plz_cverem numeric(38),
+plz_status varchar(1),
+plz_keymot varchar(6),
+plz_fecmov timestamp(0),
+plz_hormov varchar(8),
+plz_cosplz decimal(14, 2),
+plz_keysue varchar(4),
+plz_tiptab varchar(2),
+plz_sueniv numeric(38),
+plz_subniv numeric(38),
+plz_cobert varchar(2),
+plz_fecocu timestamp(0),
+plz_salplz decimal(14, 2),
+plz_origen varchar(6),
+plz_codocu varchar(6),
+plz_limocu timestamp(0),
+plz_ca1aux varchar(100),
+plz_ca2aux varchar(100),
+plz_ca3aux varchar(100),
+plz_ca4aux varchar(100),
+plz_ca5aux varchar(100),
+plz_ca6aux varchar(100),
+plz_ca7aux varchar(100),
+plz_ca8aux varchar(100),
+estatus varchar(20),
+code varchar(254),
+message varchar(254),
+fecha_insert timestamp(0),
+fecha_proc timestamp(0)
+) ;
+-- dmap_object_gen_tag : type : alter table name : api_eocoplza
+set search_path = labprod,oracle,dmap_extension,public;
+alter table api_eocoplza alter column id_transaccion set not null;
+-- dmap_object_gen_tag : type : alter table name : api_eocoplza
+set search_path = labprod,oracle,dmap_extension,public;
+alter table api_eocoplza alter column plz_keyplz set not null;

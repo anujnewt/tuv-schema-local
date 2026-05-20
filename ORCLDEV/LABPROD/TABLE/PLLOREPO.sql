@@ -1,0 +1,31 @@
+-- dmap_object_gen_tag : type : table name : pllorepo
+set search_path = labprod,oracle,dmap_extension,public;
+create table "pllorepo"  (
+rep_idepro varchar(10),
+rep_idepcc varchar(15),
+rep_keyusu numeric(10),
+rep_keydep varchar(18),
+rep_desdep varchar(30),
+rep_keyver varchar(5),
+rep_desver varchar(30),
+rep_numsec numeric(5),
+rep_keycon varchar(10),
+rep_descon varchar(20),
+rep_keyper numeric(10),
+rep_perini timestamp(0),
+rep_perfin timestamp(0),
+rep_col001 decimal(18, 2),
+rep_col002 decimal(18, 2),
+rep_col003 decimal(18, 2),
+rep_col004 decimal(18, 2),
+rep_col005 decimal(18, 2),
+rep_col006 decimal(18, 2),
+rep_col007 decimal(18, 2),
+rep_col008 decimal(18, 2),
+rep_col009 decimal(18, 2),
+rep_col010 decimal(18, 2),
+rep_col011 decimal(18, 2),
+rep_col012 decimal(18, 2),
+rep_col013 decimal(18, 2),
+rep_col014 decimal(18, 2)
+) ;

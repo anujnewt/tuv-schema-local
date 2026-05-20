@@ -1,0 +1,47 @@
+-- dmap_object_gen_tag : type : view name : view_nmlopres
+set search_path = labprod,oracle,dmap_extension,public;/* dmap converted statement start */
+create or replace view "view_nmlopres"  ("pre_keyemp", "pre_keycon", "pre_keypre", "pre_refere", "pre_fecreg", "pre_tippre", "pre_unipre", "pre_imppre", "pre_gastos", "pre_plazop", "pre_unides", "pre_impdes", "pre_porint", "pre_perini", "pre_fecini", "pre_fecaut", "pre_cveaut", "pre_fechab", "pre_uniamo", "pre_impamo", "pre_unisal", "pre_impsal", "pre_uniult", "pre_impult", "pre_numpag", "pre_intpag", "pre_status", "pre_ultact", "pre_refcon", "pre_ctreve", "pre_fe1aux", "pre_fe2aux", "pre_ca1aux", "pre_ca2aux", "pre_ca3aux", "pre_ca4aux", "pre_uniope", "pre_keypro", "pre_impnoa", "pre_pernoa") as (select
+pre_keyemp,
+pre_keycon,
+pre_keypre,
+pre_refere,
+pre_fecreg,
+pre_tippre,
+pre_unipre,
+pre_imppre,
+pre_gastos,
+pre_plazop,
+pre_unides,
+pre_impdes,
+pre_porint,
+pre_perini,
+pre_fecini,
+pre_fecaut,
+pre_cveaut,
+pre_fechab,
+pre_uniamo,
+pre_impamo,
+pre_unisal,
+pre_impsal,
+pre_uniult,
+pre_impult,
+pre_numpag,
+pre_intpag,
+pre_status,
+pre_ultact,
+pre_refcon,
+pre_ctreve,
+pre_fe1aux,
+pre_fe2aux,
+pre_ca1aux,
+pre_ca2aux,
+pre_ca3aux,
+pre_ca4aux,
+pre_uniope,
+pre_keypro,
+pre_impnoa,
+pre_pernoa
+from labprod.nmlopres
+where pre_keycon in ('121','118')
+);/* dmap converted statement end */
+-- estimed cost of view [ view_nmlopres ]: 1.00;
