@@ -1,0 +1,8 @@
+-- DMAP_OBJECT_GEN_TAG : TYPE : TRIGGER NAME : admp_parrilla_det_bi_tr_01
+SET search_path = admp,oracle,dmap_extension,public;
+DROP TRIGGER IF EXISTS admp_parrilla_det_bi_tr_01 ON admp_parrilla_det_tab CASCADE;
+-- DMAP_OBJECT_GEN_TAG : TYPE : TRIGGER NAME : admp_parrilla_det_bi_tr_01
+SET search_path = admp,oracle,dmap_extension,public;
+CREATE TRIGGER "admp_parrilla_det_bi_tr_01"
+BEFORE INSERT ON admp_parrilla_det_tab FOR EACH ROW
+EXECUTE PROCEDURE trigger_fct_admp_parrilla_det_bi_tr_01();
