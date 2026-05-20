@@ -1,0 +1,68 @@
+create or replace procedure feci."feci_inserta_carga_recibos_pr"  ( p_cia varchar, p_desc_cia varchar, p_business_unit varchar, p_folio_recibo varchar, p_fecha_gl varchar, p_receipt_date varchar, p_deposit_date varchar, p_currency_code varchar, p_currency varchar, p_type varchar, p_tipo_operacion varchar, p_clase_tipo_cambio varchar, p_tipo_cambio varchar, p_fecha_tipo_cambio varchar, p_amount varchar, p_nombre_cliente varchar, p_numero_cliente varchar, p_referencia_cliente varchar, p_clase_cliente varchar, p_tipo_cliente varchar, p_receipt_method varchar , p_bank_name varchar, p_bank_account_name varchar, p_bank_account_name2 varchar, p_bank_deposit_number varchar, p_batch_number varchar, p_num_secuencia_set varchar, p_num_cheque varchar, p_num_cta_origen varchar) as $body$
+declare
+-- pgv moved types start
+-- pgv moved types end
+begin
+insert into feci_carga_recibos_batch(
+cia,
+desc_cia,
+business_unit,
+folio_recibo,
+fecha_gl,
+receipt_date,
+deposit_date,
+currency_code,
+currency,
+type,
+tipo_operacion,
+clase_tipo_cambio,
+tipo_cambio,
+fecha_tipo_cambio,
+amount,
+nombre_cliente,
+numero_cliente,
+referencia_cliente ,
+clase_cliente,
+tipo_cliente,
+receipt_method ,
+bank_name,
+bank_account_name,
+bank_account_name2,
+bank_deposit_number,
+batch_number,
+num_secuencia_set,
+num_cheque,
+num_cta_origen)
+values (
+p_cia,
+p_desc_cia,
+p_business_unit,
+p_folio_recibo,
+p_fecha_gl,
+p_receipt_date,
+p_deposit_date,
+p_currency_code,
+p_currency,
+p_type,
+p_tipo_operacion,
+p_clase_tipo_cambio,
+p_tipo_cambio,
+p_fecha_tipo_cambio,
+p_amount,
+p_nombre_cliente,
+p_numero_cliente,
+p_referencia_cliente ,
+p_clase_cliente,
+p_tipo_cliente,
+p_receipt_method ,
+p_bank_name,
+p_bank_account_name,
+p_bank_account_name2,
+p_bank_deposit_number,
+p_batch_number,
+p_num_secuencia_set,
+p_num_cheque,
+p_num_cta_origen);end;
+$body$
+language plpgsql
+;

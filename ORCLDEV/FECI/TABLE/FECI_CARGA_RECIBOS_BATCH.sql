@@ -1,0 +1,33 @@
+-- dmap_object_gen_tag : type : table name : feci_carga_recibos_batch
+set search_path = feci,oracle,dmap_extension,public;
+create table "feci_carga_recibos_batch"  (
+cia varchar(500),
+desc_cia varchar(500),
+business_unit varchar(500),
+folio_recibo varchar(500),
+fecha_gl varchar(500),
+receipt_date varchar(500),
+deposit_date varchar(500),
+currency_code varchar(500),
+currency varchar(500),
+type varchar(500),
+tipo_operacion varchar(500),
+clase_tipo_cambio varchar(500),
+tipo_cambio varchar(500),
+fecha_tipo_cambio varchar(500),
+amount varchar(500),
+nombre_cliente varchar(500),
+numero_cliente varchar(500),
+referencia_cliente varchar(500),
+clase_cliente varchar(500),
+tipo_cliente varchar(500),
+receipt_method varchar(500),
+bank_name varchar(500),
+bank_account_name varchar(500),
+bank_account_name2 varchar(500),
+bank_deposit_number varchar(500),
+batch_number varchar(500),
+num_secuencia_set varchar(500),
+num_cheque varchar(500),
+num_cta_origen varchar(500)
+) ;
