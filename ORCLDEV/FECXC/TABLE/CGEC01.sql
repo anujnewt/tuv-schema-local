@@ -1,0 +1,4 @@
+CREATE TABLE "FECXC"."CGEC01" 
+   (	"CGECBAT" NUMBER(*,0) NOT NULL ENABLE, 
+	"timestamp" TIMESTAMP (6)
+   ) ;

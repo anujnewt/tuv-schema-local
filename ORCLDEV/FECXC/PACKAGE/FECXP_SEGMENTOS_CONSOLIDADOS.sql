@@ -1,0 +1,112 @@
+CREATE OR REPLACE EDITIONABLE PACKAGE "FECXC"."FECXP_SEGMENTOS_CONSOLIDADOS" 
+AS
+  PROCEDURE FECXP_CONSOLIDADO_SET(ID_SEGMENTO NUMBER);
+  PROCEDURE FECXP_CONSOLIDADO_NOSET(ID_SEGMENTO NUMBER);
+  PROCEDURE FECXP_CONSOLIDADO_SET_NOSET(ID_SEGMENTO NUMBER);
+  PROCEDURE FECXP_COPIA_EMPRESAS_SET;
+  PROCEDURE FECXP_COPIA_MONEDAS_SET;
+END FECXP_SEGMENTOS_CONSOLIDADOS;
+/
+CREATE OR REPLACE EDITIONABLE PACKAGE BODY "FECXC"."FECXP_SEGMENTOS_CONSOLIDADOS" 
+AS
+  PROCEDURE FECXP_CONSOLIDADO_SET(ID_SEGMENTO NUMBER) IS
+  recorre_cursor number;
+  CURSOR C_EMP_SET IS SELECT ID_EMP FROM  FECXC.FECXP_EMP_NO_SET WHERE TIPO_EMPRESA='SET';
+  BEGIN
+  FOR recorre_cursor IN C_EMP_SET LOOP
+         BEGIN
+         INSERT INTO FECXC.FECXP_EMP_X_SEGMENTO_NO_SET (ID_SEGMENTO, E_CODIGO, TIPO_EMPRESA  ) VALUES (ID_SEGMENTO, recorre_cursor.id_emp, 'NO SET');
+         EXCEPTION
+           WHEN OTHERS THEN
+           NULL;
+         END;
+  END LOOP;
+  commit;
+  END FECXP_CONSOLIDADO_SET;
+  PROCEDURE FECXP_CONSOLIDADO_NOSET(ID_SEGMENTO NUMBER) IS
+  recorre_cursor number;
+  CURSOR C_EMP_SET IS SELECT ID_EMP FROM  FECXC.FECXP_EMP_NO_SET WHERE TIPO_EMPRESA='NO SET';
+  BEGIN
+  FOR recorre_cursor IN C_EMP_SET LOOP
+         BEGIN
+         INSERT INTO FECXC.FECXP_EMP_X_SEGMENTO_NO_SET (ID_SEGMENTO, E_CODIGO, TIPO_EMPRESA  ) VALUES (ID_SEGMENTO, recorre_cursor.id_emp, 'NO SET');
+         EXCEPTION
+           WHEN OTHERS THEN
+           NULL;
+         END;
+  END LOOP;
+  commit;
+  END FECXP_CONSOLIDADO_NOSET;
+  PROCEDURE FECXP_CONSOLIDADO_SET_NOSET(ID_SEGMENTO NUMBER) IS
+  recorre_cursor number;
+  CURSOR C_EMP_SET IS SELECT ID_EMP FROM  FECXC.FECXP_EMP_NO_SET;
+  BEGIN
+  FOR recorre_cursor IN C_EMP_SET LOOP
+         BEGIN
+         INSERT INTO FECXC.FECXP_EMP_X_SEGMENTO_NO_SET (ID_SEGMENTO, E_CODIGO, TIPO_EMPRESA  ) VALUES (ID_SEGMENTO, recorre_cursor.id_emp, 'NO SET');
+         EXCEPTION
+           WHEN OTHERS THEN
+           NULL;
+         END;
+  END LOOP;
+  commit;
+  END FECXP_CONSOLIDADO_SET_NOSET;
+  PROCEDURE FECXP_COPIA_EMPRESAS_SET IS
+  recorre_cursor number;
+  CURSOR C_EMP_SET IS SELECT E_CODIGO, DES_EMPRESA FROM FECXC.FECXC_EMPRESAS;
+  BEGIN
+  DELETE FECXC.FECXP_EMP_NO_SET WHERE TIPO_EMPRESA='SET' AND CAMBIO_SET_NO_SET='N';
+  COMMIT;
+  FOR recorre_cursor IN C_EMP_SET LOOP
+         BEGIN
+         INSERT INTO FECXC.FECXP_EMP_NO_SET (ID_EMP, DESC_EMP, TIPO_EMPRESA ) VALUES (recorre_cursor.E_CODIGO, recorre_cursor.DES_EMPRESA,'SET');
+         EXCEPTION
+           WHEN OTHERS THEN
+            UPDATE FECXC.FECXP_EMP_NO_SET
+              SET  DESC_EMP=recorre_cursor.DES_EMPRESA
+              WHERE ID_EMP =recorre_cursor.E_CODIGO;
+         END;
+   END LOOP;
+  commit;
+  END FECXP_COPIA_EMPRESAS_SET;
+  PROCEDURE FECXP_COPIA_MONEDAS_SET IS
+  recorre_cursor number;
+  CURSOR C_EMP_SET IS SELECT MON_SYBASE, MON_ORACLE, DES_SYBASE,DES_ORACLE, MON_SET, TIPO_CAMBIO, FEC_INGRESO, MES, PERIODO,
+                             DES_SET, ATRIBUTO1, FECHA_ACTUALIZACION
+                      FROM FECXC.FECXP_MONEDAS;
+  BEGIN
+  DELETE FECXC.FECXP_MONEDAS_NO_SET WHERE TIPO_EMPRESA='SET';
+  COMMIT;
+  FOR recorre_cursor IN C_EMP_SET LOOP
+         BEGIN
+         INSERT INTO FECXC.FECXP_MONEDAS_NO_SET ( MON_SYBASE, MON_ORACLE, DES_SYBASE, DES_ORACLE, MON_SET, TIPO_CAMBIO, FEC_INGRESO, MES, PERIODO,
+                                                  DES_SET, ATRIBUTO1, FECHA_ACTUALIZACION, TIPO_EMPRESA)
+                                         VALUES   (recorre_cursor.MON_SYBASE, recorre_cursor.MON_ORACLE,recorre_cursor.DES_SYBASE,recorre_cursor.DES_ORACLE,recorre_cursor.MON_SET,recorre_cursor.TIPO_CAMBIO,recorre_cursor.FEC_INGRESO,recorre_cursor.MES,recorre_cursor.PERIODO,
+                                                   recorre_cursor.DES_SET, recorre_cursor.aTRIBUTO1,recorre_cursor.FECHA_ACTUALIZACION,'SET');
+         EXCEPTION
+           WHEN OTHERS THEN
+            UPDATE FECXC.FECXP_MONEDAS_NO_SET
+            SET MON_SYBASE = recorre_cursor.MON_SYBASE,
+                MON_ORACLE = recorre_cursor.MON_ORACLE,
+                DES_SYBASE = recorre_cursor.DES_SYBASE,
+                DES_ORACLE = recorre_cursor.DES_ORACLE,
+                MON_SET    = recorre_cursor.MON_SET,
+                TIPO_CAMBIO= recorre_cursor.TIPO_CAMBIO,
+                FEC_INGRESO= recorre_cursor.FEC_INGRESO,
+                MES        = recorre_cursor.MES,
+                PERIODO    = recorre_cursor.PERIODO,
+                DES_SET    = recorre_cursor.DES_SET,
+                ATRIBUTO1  = recorre_cursor.ATRIBUTO1,
+                FECHA_ACTUALIZACION = recorre_cursor.FECHA_ACTUALIZACION,
+                TIPO_EMPRESA = 'NO SET'
+                WHERE  MON_SYBASE = recorre_cursor.MON_SYBASE
+                AND    MON_ORACLE = recorre_cursor.MON_ORACLE
+                AND    MON_SET = recorre_cursor.MON_SET
+                AND    PERIODO = recorre_cursor.PERIODO
+                AND    MES     = recorre_cursor.MES;
+         END;
+   END LOOP;
+  commit;
+  END FECXP_COPIA_MONEDAS_SET;
+END FECXP_SEGMENTOS_CONSOLIDADOS;
+/;

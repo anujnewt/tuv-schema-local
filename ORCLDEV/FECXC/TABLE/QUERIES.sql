@@ -1,0 +1,10 @@
+CREATE TABLE "FECXC"."QUERIES" 
+   (	"entidad" VARCHAR2(30) NOT NULL ENABLE, 
+	"nombre" VARCHAR2(50) NOT NULL ENABLE, 
+	"usuario" VARCHAR2(30) NOT NULL ENABLE, 
+	"condicion" VARCHAR2(255) NOT NULL ENABLE, 
+	"ordenamiento" VARCHAR2(255) NOT NULL ENABLE, 
+	"timestamp" TIMESTAMP (6)
+   ) ;
+ALTER TABLE "FECXC"."QUERIES" ADD PRIMARY KEY ("entidad", "nombre", "usuario")
+  USING INDEX  ENABLE;

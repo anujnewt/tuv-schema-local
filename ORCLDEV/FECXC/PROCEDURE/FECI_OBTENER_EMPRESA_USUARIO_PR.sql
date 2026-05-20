@@ -1,0 +1,22 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "FECXC"."FECI_OBTENER_EMPRESA_USUARIO_PR" 
+(
+EMAIL IN VARCHAR2
+)
+AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+feci_cursor SYS_REFCURSOR;
+USUARIO NUMBER;
+BEGIN
+    SELECT ID_USUARIO INTO USUARIO FROM FECXC.FECI_USUARIO_TAB WHERE DES_EMAIL = email;
+    open feci_cursor for
+        SELECT  ID_EMPRESA
+        FROM FECXC.FECI_EMP_USU_TAB
+        WHERE ID_USUARIO =  USUARIO ;
+    dbms_sql.return_result(feci_cursor);
+END FECI_OBTENER_EMPRESA_USUARIO_PR;
+/

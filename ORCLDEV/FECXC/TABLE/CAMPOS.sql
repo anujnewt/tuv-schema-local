@@ -1,0 +1,8 @@
+CREATE TABLE "FECXC"."CAMPOS" 
+   (	"entidad" VARCHAR2(30) NOT NULL ENABLE, 
+	"campo" VARCHAR2(30) NOT NULL ENABLE, 
+	"nombre" VARCHAR2(50) NOT NULL ENABLE, 
+	"tipo" CHAR(1) NOT NULL ENABLE, 
+	"longitud" NUMBER(*,0) NOT NULL ENABLE, 
+	"timestamp" TIMESTAMP (6)
+   ) ;

@@ -1,0 +1,724 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "FECXC"."FECXP_LLENA_PAGOS_SET_ERP" 
+IS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+/*Noviembre 2009 V8 Modificado para llamar la extraccion de ingresos antes que los detalles automaticos*/
+/*Agosto 2009  Modificado para comenzar el proceso automatico de detalle solo dos*/
+/*agosto 2009 Modificado para evitar triplicaciones incluye el caso de cancelados sin aplicado en bitacora*/
+/*julio 2009  elimina temporalidad de tablas  de trabajo*/
+/*abril 2009  Separar cancelados de los que no en prov_det*/
+/*FECHA MODIFICACION: Noviembre 08*/
+/*Los movimientos SET ahora tienen un historico en el caso de los cancelados, por lo que se modifica este procedimiento*/
+/*Se hace filtro para evitar los movs. con status cancelado y luego se retoman calculando importe con signo contrario*/
+/*17may2011 Se agrega condicion para que no mande a ejecutar los demas procesos los dias lunes*/
+        V_FEC_FEC_EJECUCION DATE:= SYSDATE;
+        V_FOLIO_SET VARCHAR2 (150); -- := '';
+        V_CONTADOR INTEGER:=0;
+        V_DIA    VARCHAR (20);
+        V_HORA   VARCHAR (30);
+BEGIN
+    ---Utilizar DBLink  para verificar si hay conexion
+    SELECT COUNT(CHECK_ID)
+    INTO V_CONTADOR
+        FROM AP_CHECKS_ALL@ERP_PROD
+        where CHECK_DATE>= SYSDATE;
+    -- INICIALIZA FECXP_FOLIOS_PROV_ENC --
+    DELETE FECXP_FOLIOS_PROV_ENC;
+    --COMMIT;
+    -- INICIALIZA FECXP_FOLIOS_PROV_DET --
+    DELETE FECXP_FOLIOS_PROV_DET;
+    --COMMIT;
+    --INICIALIZA TABLAS DE TRABAJO
+    DELETE FECXP_ENC_REPLICAS_PROC_TMP;
+    DELETE FECXP_REPLICAS_POR_CERRAR;
+    DELETE FECXP_CANCELADOS_SINCAMBIOS;
+    DELETE FECXP_CREAR_APERTURADOS;
+    --DELETE FECXP_FOL_AP_TMP;
+    --DELETE FECXP_APE_DET_TMP;
+    DELETE FECXP_ENC_PAGOS_ERP_TMP;
+    DELETE FECXP_FOLIOS_PROV_CHECKS;
+    DELETE FECXP_FOLIOS_PROV_INVOICES;
+    --COMMIT;
+    --- ======== CONTROL DINAMICO ======== ---
+    -- INHABILITA PARA APERTURA AQUELLOS REGISTROS QUE SOBREPASEN LA VIGENCIA --
+    -- ESTATUS_CONT_DIN_APER = 'P' [PENDIENTE], 'S' [SIN CUADRAR], 'C' [CUADRADO] --
+    -- no excluye a los cancelados porque de otra forma quedan distintos el aplicado y cancelado ('S' y 'P') por ejemplo
+    -- Si ya esta cerrado no se toma en cuenta
+    UPDATE    FECXP_BIT_CONT_DIN_APER_ENC
+    SET        ESTATUS_CONT_DIN_APER = CASE WHEN DIAS_VIGENCIA_APERTURA > ROUND (V_FEC_FEC_EJECUCION - FEC_PRIMERA_EJECUCION) THEN 'P' ELSE 'S' END,
+            FEC_ULTIMA_EJECUCION = CASE WHEN DIAS_VIGENCIA_APERTURA > ROUND (V_FEC_FEC_EJECUCION - FEC_PRIMERA_EJECUCION) THEN V_FEC_FEC_EJECUCION ELSE FEC_ULTIMA_EJECUCION END
+    WHERE    FOLIO_SET = NVL (V_FOLIO_SET, FOLIO_SET)
+    AND        ESTATUS_CONT_DIN_APER <> 'C';
+    --AND     ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z');
+    /*Identifica los aplicados que revivieron sin borrar el cancelado*/
+    INSERT INTO FECXP_CANCELADOS_SIN_APLICADO( E_CODIGO, FOLIO_SET, SECUENCIA_PAGOS_ERP)
+    SELECT BE.E_CODIGO, BE.FOLIO_SET, BE.SECUENCIA_PAGOS_ERP
+       FROM FECXP_BIT_CONT_DIN_APER_ENC BE
+       WHERE BE.ESTATUS_MOVIMIENTO IN ('X','Y','Z')
+       AND BE.FECHA_APLICACION>=TO_DATE('20090101','YYYYMMDD')
+       AND NOT EXISTS
+               (SELECT 1
+                FROM   FECXP_BIT_CONT_DIN_APER_ENC BA
+                WHERE BA.E_CODIGO = BE.E_CODIGO
+                AND   BA.FOLIO_SET = BE.FOLIO_SET
+                AND   BA.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')
+              );
+    DELETE  FECXP_BIT_CONT_DIN_APER_DET D
+    WHERE EXISTS
+        (SELECT 1
+            FROM   FECXP_CANCELADOS_SIN_APLICADO E
+            WHERE E.E_CODIGO = D.E_CODIGO
+            AND E.SECUENCIA_PAGOS_ERP = D.SECUENCIA_PAGOS_ERP)
+    ;
+    DELETE FROM   FECXP_BIT_CONT_DIN_APER_ENC D
+    WHERE EXISTS
+    (SELECT 1
+        FROM FECXP_CANCELADOS_SIN_APLICADO E
+        WHERE  E.E_CODIGO = D.E_CODIGO
+        AND E.SECUENCIA_PAGOS_ERP = D.SECUENCIA_PAGOS_ERP)
+     ;
+    DELETE FROM FECXP_DET_PAGOS_PROCESADOS D
+    WHERE EXISTS
+    (SELECT 1
+        FROM FECXP_CANCELADOS_SIN_APLICADO E
+        WHERE  E.E_CODIGO = D.E_CODIGO
+        AND E.SECUENCIA_PAGOS_ERP = D.SECUENCIA_PAGOS_ERP)
+     ;
+     /*Termina de eliminar lo cancelado sin aplicado*/
+    -- COMMIT;
+    --- ======== CONTROL DINAMICO ======== ---
+    -- VUELVE A TOMAR AQUELLOS FOLIOS QUE SIGUEN PENDIENTES, no distingue entre aplicados y cancelados
+    -- siempre y cuando este pendiente en bitacora se reapertura
+    UPDATE    FECXP_ENC_PAGOS_ERP E
+    SET        E.PROCESADO = 0
+    WHERE    EXISTS
+            (
+                SELECT    1
+                FROM    FECXP_BIT_CONT_DIN_APER_ENC B
+                WHERE    B.ESTATUS_CONT_DIN_APER = 'P'
+                AND        B.SECUENCIA_PAGOS_ERP = E.SECUENCIA_PAGOS_ERP
+                AND        B.E_CODIGO = E.E_CODIGO
+            )
+    AND        FOLIO_SET = NVL (V_FOLIO_SET, FOLIO_SET);
+    -- COMMIT;
+    -- SE REINICIALIZA EL ESTATUS DE PROCESADO SI NO SE CUENTA CON DETALLE APERTURADO --
+    -- tampoco distingue entre cancelados y aplicados
+    UPDATE    FECXP_ENC_PAGOS_ERP E
+    SET        E.PROCESADO = 0
+    WHERE    FECHA_APLICACION >= TO_DATE (TO_CHAR (ADD_MONTHS (SYSDATE, -1), 'YYYYMM') || '01', 'YYYYMMDD')
+    AND        NOT EXISTS
+            (
+                SELECT    1
+                FROM    FECXP_DET_PAGOS_PROCESADOS D
+                WHERE    E.E_CODIGO = D.E_CODIGO
+                AND        E.SECUENCIA_PAGOS_ERP = D.SECUENCIA_PAGOS_ERP
+            )
+    AND        PROCESADO = 1
+    AND        FOLIO_SET = NVL (V_FOLIO_SET, FOLIO_SET);
+    -- COMMIT;
+    -- TODO AQUEL DOCUMEMTO QUE NO HAYA SIDO PROCESADO SE LE BOBRRARA SU DETALLE --
+    -- tampoco distingue entre cancelados y aplicados
+    DELETE    FECXP_DET_PAGOS_PROCESADOS D
+    WHERE    EXISTS
+            (
+                SELECT    1
+                FROM    FECXP_ENC_PAGOS_ERP E
+                WHERE    E.E_CODIGO = D.E_CODIGO
+                AND        E.SECUENCIA_PAGOS_ERP = D.SECUENCIA_PAGOS_ERP
+                AND        E.PROCESADO = 0
+                AND        E.FOLIO_SET = NVL (V_FOLIO_SET, E.FOLIO_SET)
+            );
+    -- COMMIT;
+    -- SE EXTRAEN LOS FOLIOS QUE CAEN EN LA REGLA DE NEGOCIOS DE CUENTAS DE PROVISION --
+    -- Excluye los cancelados para que no duplique informacion y solo tome el folio aplicado
+    INSERT    INTO FECXP_FOLIOS_PROV_ENC (FECXP_E_CODIGO, FECXP_NO_FOLIO_DET, FECXP_IMPORTE)
+    SELECT    EP.E_CODIGO, EP.FOLIO_SET, EP.IMPORTE
+    FROM    FECXP_ENC_PAGOS_ERP EP
+    WHERE    PROCESADO = 0
+    AND        EXISTS
+            (
+                SELECT    1
+                FROM    FECXP_DET_PAGOS_ERP DE,
+                        FECXP_PAGOS_CUENTAS_APERTURA CA
+                WHERE    (DE.ORACLE_SEGMENTO1 = CA.ORACLE_SEGMENTO1 OR CA.ORACLE_SEGMENTO1 IS NULL)
+                AND        (DE.ORACLE_SEGMENTO2 = CA.ORACLE_SEGMENTO2 OR CA.ORACLE_SEGMENTO2 IS NULL)
+                AND        (DE.ORACLE_SEGMENTO3 = CA.ORACLE_SEGMENTO3 OR CA.ORACLE_SEGMENTO3 IS NULL)
+                AND        (DE.ORACLE_SEGMENTO4 = CA.ORACLE_SEGMENTO4 OR CA.ORACLE_SEGMENTO4 IS NULL)
+                AND        (DE.ORACLE_SEGMENTO5 = CA.ORACLE_SEGMENTO5 OR CA.ORACLE_SEGMENTO5 IS NULL)
+                AND        (DE.ORACLE_SEGMENTO6 = CA.ORACLE_SEGMENTO6 OR CA.ORACLE_SEGMENTO6 IS NULL)
+                AND        (DE.ORACLE_SEGMENTO7 = CA.ORACLE_SEGMENTO7 OR CA.ORACLE_SEGMENTO7 IS NULL)
+                AND        EP.E_CODIGO = DE.E_CODIGO
+                AND        EP.SECUENCIA_PAGOS_ERP = DE.SECUENCIA_PAGOS_ERP
+            )
+    AND        EP.FOLIO_SET = NVL (V_FOLIO_SET, EP.FOLIO_SET)
+    AND        EP.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z');
+    --- ======== CONTROL DINAMICO ======== ---
+    -- INSERTA LOS FOLIOS SET QUE PUEDEN VOLVER A SER APERTURADOS --
+    -- Y QUE NO ESTEN DUPLICADOS. CASO FOLIOS SET REVIVIDOS --
+    -- excluye cancelados para evitar duplicar folio (aplicado y cancelado)
+    INSERT    INTO FECXP_FOLIOS_PROV_ENC (FECXP_E_CODIGO, FECXP_NO_FOLIO_DET, FECXP_IMPORTE)
+    SELECT    E_CODIGO, FOLIO_SET, IMPORTE_SET
+    FROM    FECXP_BIT_CONT_DIN_APER_ENC B
+    WHERE    B.FOLIO_SET = NVL (V_FOLIO_SET, B.FOLIO_SET)
+    AND     B.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')
+    AND        B.ESTATUS_CONT_DIN_APER = 'P'
+    AND        NOT EXISTS
+            (
+                SELECT    1
+                FROM    FECXP_FOLIOS_PROV_ENC P
+                WHERE    P.FECXP_E_CODIGO = B.E_CODIGO
+                AND        P.FECXP_NO_FOLIO_DET = B.FOLIO_SET
+            );
+    -- COMMIT;
+    -- ====================================================================================================== --
+    DELETE FECXP_FOLIOS_PROV_CHECKS;
+    -- RECUPERA LOS FOLIOS CON BASE A RELACIONES DE AP [SET.FOLIO SET A CHEQUES.ATRIBUTO] --
+    INSERT    INTO FECXP_FOLIOS_PROV_CHECKS (FECXP_E_CODIGO, FECXP_NO_FOLIO_DET, AP_CHECK_ID)
+    SELECT    EP.FECXP_E_CODIGO,
+              EP.FECXP_NO_FOLIO_DET,
+              CH.CHECK_ID
+      FROM    FECXC.FECXP_FOLIOS_PROV_ENC EP,
+              AP_CHECKS_ALL@ERP_PROD CH
+      WHERE    EP.FECXP_NO_FOLIO_DET = CH.ATTRIBUTE11
+    GROUP BY EP.FECXP_E_CODIGO,
+              EP.FECXP_NO_FOLIO_DET,
+              CH.CHECK_ID;
+    DELETE FECXP_FOLIOS_PROV_INVOICES;
+    -- RECUPERA LOS FOLIOS CON BASE A RELACIONES DE AP [CHEQUES.ATRIBUTO A FACTURAS.INVOICE] --
+    INSERT    INTO FECXP_FOLIOS_PROV_INVOICES (FECXP_E_CODIGO, FECXP_NO_FOLIO_DET, AP_CHECK_ID, AP_INVOICE_ID)
+    SELECT    DP.FECXP_E_CODIGO, DP.FECXP_NO_FOLIO_DET, DP.AP_CHECK_ID, IP.INVOICE_ID
+    FROM    FECXP_FOLIOS_PROV_CHECKS DP,
+            AP_INVOICE_PAYMENTS_ALL@ERP_PROD IP
+    WHERE    IP.CHECK_ID = DP.AP_CHECK_ID
+    GROUP BY DP.FECXP_E_CODIGO, DP.FECXP_NO_FOLIO_DET, DP.AP_CHECK_ID, IP.INVOICE_ID;
+    -- CREA DETALLE APERTURADO A PARTIR DE AP Y FLEXFIELD DE AP --
+    INSERT    INTO FECXC.FECXP_FOLIOS_PROV_DET (
+            FECXP_E_CODIGO, FECXP_NO_FOLIO_DET, FECXP_IMPORTE, AP_INVOICE_ID, AP_INVOICE_AMOUNT, AP_DISTRIBUTION_LINE_NUMBER, AP_DISTRIBUTION_AMOUNT, AP_DIST_CODE_COMBINATION_ID, AP_CUENTA)
+    SELECT    EP.FECXP_E_CODIGO,
+              EP.FECXP_NO_FOLIO_DET,
+              EP.FECXP_IMPORTE,
+              IP.INVOICE_ID,
+              SUM (IP.AMOUNT) MONTO_FACTURA,
+              D.DISTRIBUTION_LINE_NUMBER,
+              D.AMOUNT MONTO_DISTRIBUCION,
+            D.DIST_CODE_COMBINATION_ID,
+              D.ATTRIBUTE12
+      FROM    FECXC.FECXP_FOLIOS_PROV_ENC EP,
+              FECXP_FOLIOS_PROV_INVOICES DP,
+              AP_INVOICE_PAYMENTS_ALL@ERP_PROD IP,
+              AP_INVOICE_DISTRIBUTIONS_ALL@ERP_PROD D
+      WHERE    EP.FECXP_NO_FOLIO_DET = DP.FECXP_NO_FOLIO_DET
+    AND        IP.CHECK_ID = DP.AP_CHECK_ID
+      AND        IP.INVOICE_ID = DP.AP_INVOICE_ID
+      AND        D.INVOICE_ID = DP.AP_INVOICE_ID
+    GROUP BY EP.FECXP_E_CODIGO,
+              EP.FECXP_NO_FOLIO_DET,
+              EP.FECXP_IMPORTE,
+              IP.INVOICE_ID,
+              D.DISTRIBUTION_LINE_NUMBER,
+              D.AMOUNT,
+            D.DIST_CODE_COMBINATION_ID,
+              D.ATTRIBUTE12;
+    -- ====================================================================================================== --
+    -- COMMIT;
+    -- ACTUALIZA CUENTAS. TOMA FLEXFIELD DONDE APLICA --
+    UPDATE    FECXC.FECXP_FOLIOS_PROV_DET D
+    SET        (
+                D.SEGMENTO1,
+                D.SEGMENTO2,
+                D.SEGMENTO3,
+                D.SEGMENTO4,
+                D.SEGMENTO5,
+                D.SEGMENTO6,
+                D.SEGMENTO7
+            ) =
+            (
+            SELECT
+                    DECODE (D.AP_CUENTA, NULL, G.SEGMENT1, SUBSTR (D.AP_CUENTA, 1, 3)),
+                    DECODE (D.AP_CUENTA, NULL, G.SEGMENT2, SUBSTR (D.AP_CUENTA, INSTR (D.AP_CUENTA, '-', 1, 1) + 1, 2)),
+                    DECODE (D.AP_CUENTA, NULL, G.SEGMENT3, SUBSTR (D.AP_CUENTA, INSTR (D.AP_CUENTA, '-', 1, 2) + 1, 3)),
+                    DECODE (D.AP_CUENTA, NULL, G.SEGMENT4, SUBSTR (D.AP_CUENTA, INSTR (D.AP_CUENTA, '-', 1, 3) + 1, 6)),
+                    DECODE (D.AP_CUENTA, NULL, G.SEGMENT5, SUBSTR (D.AP_CUENTA, INSTR (D.AP_CUENTA, '-', 1, 4) + 1, 8)),
+                    DECODE (D.AP_CUENTA, NULL, G.SEGMENT6, SUBSTR (D.AP_CUENTA, INSTR (D.AP_CUENTA, '-', 1, 5) + 1, 3)),
+                    DECODE (D.AP_CUENTA, NULL, G.SEGMENT7, SUBSTR (D.AP_CUENTA, INSTR (D.AP_CUENTA, '-', 1, 6) + 1, 1))
+            FROM    GL_CODE_COMBINATIONS@ERP_PROD G
+            WHERE    G.CODE_COMBINATION_ID = D.AP_DIST_CODE_COMBINATION_ID
+            );
+    -- COMMIT;
+    --- ======== CONTROL DINAMICO ======== ---
+    -- INSERTA ENCABEZADOS DE BITACORA NUEVOS --
+    INSERT    INTO FECXP_BIT_CONT_DIN_APER_ENC (
+            SECUENCIA_PAGOS_ERP, E_CODIGO, FOLIO_SET, MONEDA, FECHA_APLICACION,
+            TIPO_OPERACION, ID_BANCO, FORMA_PAGO, ESTATUS_MOVIMIENTO, ID_CHEQUERA,
+            CONCEPTO, BENEFICIARIO, IMPORTE_SET, FEC_PRIMERA_EJECUCION, FEC_ULTIMA_EJECUCION)
+    SELECT    E.SECUENCIA_PAGOS_ERP, E.E_CODIGO, E.FOLIO_SET, E.MONEDA, E.FECHA_APLICACION,
+            E.TIPO_OPERACION, E.ID_BANCO, E.FORMA_PAGO, E.ESTATUS_MOVIMIENTO, E.ID_CHEQUERA,
+            E.CONCEPTO, E.BENEFICIARIO, E.IMPORTE, V_FEC_FEC_EJECUCION, V_FEC_FEC_EJECUCION
+    FROM    (
+                SELECT    FE.FECXP_E_CODIGO, FE.FECXP_NO_FOLIO_DET,
+                        FE.FECXP_IMPORTE IMPORTE_SET, SUM (FD.AP_DISTRIBUTION_AMOUNT) IMPORTE_AP
+                FROM    FECXP_FOLIOS_PROV_ENC FE,
+                        FECXP_FOLIOS_PROV_DET FD
+                WHERE    FE.FECXP_E_CODIGO = FD.FECXP_E_CODIGO
+                AND        FE.FECXP_NO_FOLIO_DET = FD.FECXP_NO_FOLIO_DET
+                GROUP BY FE.FECXP_E_CODIGO, FE.FECXP_NO_FOLIO_DET, FE.FECXP_IMPORTE
+            ) F,
+            FECXP_ENC_PAGOS_ERP E
+    WHERE    E.FOLIO_SET = NVL (V_FOLIO_SET, E.FOLIO_SET)
+    AND        F.FECXP_E_CODIGO = E.E_CODIGO
+    AND        F.FECXP_NO_FOLIO_DET = E.FOLIO_SET
+    AND        E.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')
+    AND        E.SECUENCIA_PAGOS_ERP NOT IN
+            (
+                SELECT    B.SECUENCIA_PAGOS_ERP
+                FROM    FECXP_BIT_CONT_DIN_APER_ENC B
+                WHERE    B.FOLIO_SET = NVL (V_FOLIO_SET, B.FOLIO_SET)
+            );
+    -- COMMIT;
+    -- SE INSERTA DETALLE APERTURADO EN ESTRUCTURA DE DETALLE DE EGRESOS ORACLE --
+    -- excluye a los folios cancelados para tomar solo los aplicados
+    INSERT    INTO FECXP_DET_PAGOS_PROCESADOS (
+            E_CODIGO, SECUENCIA_PAGOS_ERP, SECUENCIA_DET_PAGOS_ERP, NUMERO_DE_PARTIDA_ERP,
+            SEC_DET_PAG_PROC, CODE_COMBINATION, IMPORTE_LINEA, ORACLE_SEGMENTO1, ORACLE_SEGMENTO2,
+            ORACLE_SEGMENTO3, ORACLE_SEGMENTO4, ORACLE_SEGMENTO5, ORACLE_SEGMENTO6, ORACLE_SEGMENTO7)
+    SELECT    FPD.FECXP_E_CODIGO,
+            EP.SECUENCIA_PAGOS_ERP,
+            1 AS SECUENCIA_DET_PAGOS_ERP,
+            1 AS NUMERO_DE_PARTIDA_ERP,
+            SEC_DET_PAG_PROC.NEXTVAL,
+            FPD.AP_DIST_CODE_COMBINATION_ID,
+            FPD.AP_DISTRIBUTION_AMOUNT AP_DISTRIBUTION_AMOUNT,
+            FPD.SEGMENTO1,
+            FPD.SEGMENTO2,
+            FPD.SEGMENTO3,
+            FPD.SEGMENTO4,
+            FPD.SEGMENTO5,
+            FPD.SEGMENTO6,
+            FPD.SEGMENTO7
+    FROM    FECXP_ENC_PAGOS_ERP EP,
+            FECXP_FOLIOS_PROV_DET FPD
+    WHERE    EP.E_CODIGO = FPD.FECXP_E_CODIGO
+    AND        EP.FOLIO_SET = FPD.FECXP_NO_FOLIO_DET
+    AND        EP.ESTATUS_MOVIMIENTO NOT IN ('X', 'Y', 'Z')  --tomar los folios aplicados
+    ;
+    ---====Cambio, ahora el detalle de bitacora guardara la suma del detalle aperturado final para los encabezados no cancelados
+    --- esto para que en caso de duplicacion o triplicacion quede como pendiente y no lo cierre
+    --- ======== CONTROL DINAMICO ======== ---
+    -- INSERTA TODOS LOS DETALLES GENERADOS --
+    --- excluir los pendientes de cancelados que se encuentren en el encabezado de bitacora
+    INSERT    INTO FECXP_BIT_CONT_DIN_APER_DET (
+            SECUENCIA_PAGOS_ERP, E_CODIGO, SECUENCIA_CONT_DIN_APER_DET, IMPORTE_SET, IMPORTE_AP, FEC_EJECUCION)
+    SELECT    B.SECUENCIA_PAGOS_ERP, B.E_CODIGO, SECUENCIA_CONT_DIN_APER_DET.NEXTVAL, B.IMPORTE_SET, FD.IMPORTE_AP, V_FEC_FEC_EJECUCION
+    FROM    FECXP_BIT_CONT_DIN_APER_ENC B,
+            (
+                SELECT    D.E_CODIGO, D.SECUENCIA_PAGOS_ERP, SUM (D.IMPORTE_LINEA) IMPORTE_AP
+                FROM    FECXP_ENC_PAGOS_ERP E,
+                        FECXP_DET_PAGOS_PROCESADOS D
+                WHERE     E.E_CODIGO = D.E_CODIGO
+                AND     E.SECUENCIA_PAGOS_ERP = D.SECUENCIA_PAGOS_ERP
+                AND        E.PROCESADO=0
+                AND        E.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')
+                GROUP BY D.E_CODIGO, D.SECUENCIA_PAGOS_ERP
+            ) FD
+    WHERE    B.E_CODIGO = FD.E_CODIGO
+    AND        B.SECUENCIA_PAGOS_ERP = FD.SECUENCIA_PAGOS_ERP
+    AND        B.ESTATUS_CONT_DIN_APER = 'P'
+    AND     B.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z');
+    --- ======== CONTROL DINAMICO ======== ---
+    -- INSERTA LOS FOLIOS AP NUEVOS --
+    --- exlcuir los cancelados
+    INSERT    INTO FECXP_BIT_CONT_DIN_FOLIOS_AP (
+            SECUENCIA_PAGOS_ERP, E_CODIGO, SECUENCIA_CONT_DIN_APER_DET, AP_INVOICE_ID, AP_INVOICE_AMOUNT)
+    SELECT    BD.SECUENCIA_PAGOS_ERP, BD.E_CODIGO, BD.SECUENCIA_CONT_DIN_APER_DET, FD.AP_INVOICE_ID, FD.IMPORTE_AP
+    FROM    FECXP_BIT_CONT_DIN_APER_ENC BE,
+            FECXP_BIT_CONT_DIN_APER_DET BD,
+            (
+                SELECT    D.FECXP_E_CODIGO, D.FECXP_NO_FOLIO_DET, D.AP_INVOICE_ID, SUM (D.AP_DISTRIBUTION_AMOUNT) IMPORTE_AP
+                FROM    FECXP_FOLIOS_PROV_DET D
+                GROUP BY D.FECXP_E_CODIGO, D.FECXP_NO_FOLIO_DET, D.AP_INVOICE_ID
+            ) FD
+    WHERE    BE.FOLIO_SET = NVL (V_FOLIO_SET, BE.FOLIO_SET)
+    AND        BE.ESTATUS_CONT_DIN_APER = 'P'
+    AND        BE.SECUENCIA_PAGOS_ERP = BD.SECUENCIA_PAGOS_ERP
+    AND        BE.E_CODIGO = FD.FECXP_E_CODIGO
+    AND        BE.FOLIO_SET = FD.FECXP_NO_FOLIO_DET
+    AND        BE.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')   --ahora excluye cancelados
+    AND        BD.SECUENCIA_CONT_DIN_APER_DET NOT IN
+            (
+                SELECT    SECUENCIA_CONT_DIN_APER_DET
+                FROM    FECXP_BIT_CONT_DIN_FOLIOS_AP
+            );
+    -- ======== CONTROL DINAMICO ======== ---
+    -- MANEJA LA ULTIMA FECHA DE PROCESAMIENTO --
+    UPDATE    FECXP_BIT_CONT_DIN_APER_ENC
+    SET        FEC_ULTIMA_EJECUCION = V_FEC_FEC_EJECUCION
+    WHERE    FOLIO_SET = NVL (V_FOLIO_SET, FOLIO_SET)
+    AND        ESTATUS_CONT_DIN_APER = 'P';
+    --- ======== CONTROL DINAMICO ======== ---
+    -- CIERRA LOS FOLIOS QUE CUADRARON --
+    --- excluye los cancelados existentes para que repliquen la reaperturacion correcta
+    UPDATE    FECXP_BIT_CONT_DIN_APER_ENC BE
+    SET        BE.ESTATUS_CONT_DIN_APER = 'C'
+    WHERE    FOLIO_SET = NVL (V_FOLIO_SET, FOLIO_SET)
+    AND        EXISTS
+            (
+                SELECT    1
+                FROM    FECXP_BIT_CONT_DIN_APER_DET BD
+                WHERE    BD.FEC_EJECUCION = V_FEC_FEC_EJECUCION
+                AND        BE.SECUENCIA_PAGOS_ERP = BD.SECUENCIA_PAGOS_ERP
+                AND        BE.E_CODIGO = BD.E_CODIGO
+                AND        BD.IMPORTE_SET = BD.IMPORTE_AP
+            )
+    AND        BE.ESTATUS_CONT_DIN_APER = 'P'
+    AND        BE.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')  --Se excluye el cancelado para que pueda replicar si ya existe
+    ;
+    -- COMMIT;
+    -- SE INSERTA EL RESTO DE LOS FOLIOS QUE NO MANEJAN PROVISIONES --
+    -- excluir a los folios cancelados y tomar solo aplicados
+    INSERT    INTO FECXP_DET_PAGOS_PROCESADOS (
+            E_CODIGO, SECUENCIA_PAGOS_ERP, SECUENCIA_DET_PAGOS_ERP, NUMERO_DE_PARTIDA_ERP,
+            SEC_DET_PAG_PROC, CODE_COMBINATION, IMPORTE_LINEA, ORACLE_SEGMENTO1, ORACLE_SEGMENTO2,
+            ORACLE_SEGMENTO3, ORACLE_SEGMENTO4, ORACLE_SEGMENTO5, ORACLE_SEGMENTO6, ORACLE_SEGMENTO7)
+    SELECT    D.E_CODIGO,
+            D.SECUENCIA_PAGOS_ERP,
+            D.SECUENCIA_DET_PAGOS_ERP,
+            D.NUMERO_DE_PARTIDA_ERP,
+            SECUENCIA_DET_PAGOS_ABRIR.NEXTVAL,
+            D.CODE_COMBINATION,
+            D.IMPORTE_LINEA,
+            D.ORACLE_SEGMENTO1,
+            D.ORACLE_SEGMENTO2,
+            D.ORACLE_SEGMENTO3,
+            D.ORACLE_SEGMENTO4,
+            D.ORACLE_SEGMENTO5,
+            D.ORACLE_SEGMENTO6,
+            D.ORACLE_SEGMENTO7
+    FROM    FECXP_ENC_PAGOS_ERP E,
+            FECXP_DET_PAGOS_ERP D
+    WHERE    E.PROCESADO = 0
+    AND        E.E_CODIGO = D.E_CODIGO
+    AND        E.SECUENCIA_PAGOS_ERP = D.SECUENCIA_PAGOS_ERP
+    AND        E.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z') --excluye cancelados
+    AND        NOT EXISTS
+            (
+            SELECT    1
+            FROM    FECXP_FOLIOS_PROV_DET P
+            WHERE    E.E_CODIGO = P.FECXP_E_CODIGO
+            AND        E.FOLIO_SET = P.FECXP_NO_FOLIO_DET
+            )
+    ;
+    -- DETECTA LOS FOLIOS CUYO DETALLE Y ENCABEZADO MANEJA DIFERENTE MONTO.
+    -- solo toma los folios aplicados
+    INSERT    INTO FECXP_ENC_PAGOS_ERP_TMP(E_CODIGO, SECUENCIA_PAGOS_ERP)
+    SELECT    A1.E_CODIGO, A1.SECUENCIA_PAGOS_ERP
+    FROM    FECXP_ENC_PAGOS_ERP A1,
+            (
+                SELECT    A.E_CODIGO, A.SECUENCIA_PAGOS_ERP, sum(IMPORTE_LINEA) IMPORTE_LINEA
+                FROM     FECXP_ENC_PAGOS_ERP     A,
+                        FECXP_DET_PAGOS_PROCESADOS B
+                WHERE    A.PROCESADO = 0
+                AND        A.E_CODIGO = B.E_CODIGO
+                AND        A.SECUENCIA_PAGOS_ERP = B.SECUENCIA_PAGOS_ERP
+                AND        A.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')   ---EXCLUYE CANCELADOS
+                GROUP BY A.E_CODIGO, A.SECUENCIA_PAGOS_ERP
+            ) B1
+    WHERE    A1.PROCESADO = 0
+    AND        A1.E_CODIGO = B1.E_CODIGO
+    AND        A1.SECUENCIA_PAGOS_ERP = B1.SECUENCIA_PAGOS_ERP
+    AND        A1.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')  --Excluye cancelados
+    AND        A1.IMPORTE <> B1.IMPORTE_LINEA;
+    -- COMMIT;
+    -- SI SON DISTINTOS SE BORRAN LOS REGISTROS EN FECXP_DETALLE_PAGOS_PROCESADOS --
+    DELETE    FECXP_DET_PAGOS_PROCESADOS DEL_TABLE
+    WHERE    EXISTS
+            (
+                SELECT    1
+                FROM    FECXP_ENC_PAGOS_ERP_TMP A
+                WHERE    A.E_CODIGO = DEL_TABLE.E_CODIGO
+                AND        A.SECUENCIA_PAGOS_ERP = DEL_TABLE.SECUENCIA_PAGOS_ERP
+            );
+    -- COMMIT;
+    -- Y SE REEMPLAZAN POR LOS DATOS "ORIGINALES" SACADOS DE FECXP_ENC_PAGOS_ERP Y FECXP_DET_PAGOS_ERP --
+    --- excluye a los cancelados
+    INSERT    INTO FECXP_DET_PAGOS_PROCESADOS (
+            E_CODIGO, SECUENCIA_PAGOS_ERP, SECUENCIA_DET_PAGOS_ERP, NUMERO_DE_PARTIDA_ERP,
+            SEC_DET_PAG_PROC, CODE_COMBINATION, IMPORTE_LINEA, ORACLE_SEGMENTO1, ORACLE_SEGMENTO2,
+            ORACLE_SEGMENTO3, ORACLE_SEGMENTO4, ORACLE_SEGMENTO5, ORACLE_SEGMENTO6, ORACLE_SEGMENTO7)
+    SELECT    EP.E_CODIGO, EP.SECUENCIA_PAGOS_ERP, DP.SECUENCIA_DET_PAGOS_ERP, DP.NUMERO_DE_PARTIDA_ERP,
+            SEC_DET_PAG_PROC.NEXTVAL, DP.CODE_COMBINATION, DP.IMPORTE_LINEA, DP.ORACLE_SEGMENTO1, DP.ORACLE_SEGMENTO2,
+            DP.ORACLE_SEGMENTO3, DP.ORACLE_SEGMENTO4, DP.ORACLE_SEGMENTO5, DP.ORACLE_SEGMENTO6, DP.ORACLE_SEGMENTO7
+    FROM    FECXP_ENC_PAGOS_ERP EP,
+            FECXP_DET_PAGOS_ERP DP,
+            FECXP_ENC_PAGOS_ERP_TMP DEL_TABLE
+    WHERE    EP.SECUENCIA_PAGOS_ERP = DP.SECUENCIA_PAGOS_ERP
+    AND        EP.E_CODIGO = DP.E_CODIGO
+    AND        EP.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')  --toma aplicados
+    AND        EP.SECUENCIA_PAGOS_ERP = DEL_TABLE.SECUENCIA_PAGOS_ERP
+    AND        EP.E_CODIGO = DEL_TABLE.E_CODIGO
+    ;
+    -------------======================================CANCELADOS================================================================-
+    ----Una vez aperturado debe replicar para los registros cancelados.
+    ---- Si el folio es nuevo y cae el mismo dia que la cancelacion
+    ----        debe replicar ya sea que haya cerrado o que  este pendiente
+    ---- Si el folio ya existia y el cancelado recien cayo
+    ----        debe replicar ya sea que haya cerrado o que  este pendiente
+    ---- Si el folio ya existia y el cancelado tambien
+    ----        si el folio cerro debe eliminar lo que existia y replicar la reaperturacion correcta
+    /*IDENTIFICAR LOS FOLIOS COINCIDENTES QUE EN ENC_PAGOS ESTAN CANCELADOS Y CON PROCESADO=0*/
+    INSERT INTO FECXP_ENC_REPLICAS_PROC_TMP
+        (SECUENCIA_PAGOS_ERP, E_CODIGO, FOLIO_SET, FECHA_APLICACION, IMPORTE, ESTATUS_MOVIMIENTO, ESTATUS_DE_INGRESO)
+        SELECT E.SECUENCIA_PAGOS_ERP, E.E_CODIGO, E.FOLIO_SET, E.FECHA_APLICACION, E.IMPORTE, E.ESTATUS_MOVIMIENTO, E.ESTATUS_DE_INGRESO
+        FROM FECXP_ENC_PAGOS_ERP E
+        WHERE  E.PROCESADO=0
+        AND    E.ESTATUS_MOVIMIENTO IN ('X','Y','Z')
+        ;
+    /*Caso 0:  Cuando los folios revivieron y se elmino  y el cancelado ya existe*/
+   /*Caso 1: Folios cancelados que ya existen en bitacora y siguen pendientes, pero su aplicado se cerro*/
+   ---Obtener la secuencia de los cancelados existentes en bitacora cuyo aplicado fue cerrado en el proceso.
+   INSERT INTO FECXP_REPLICAS_POR_CERRAR
+       (E_CODIGO, FOLIO_SET, SECUENCIA_PAGOS_ERP, SECUENCIA_APLICADA)
+   SELECT CA.E_CODIGO, CA.FOLIO_SET, CA.SECUENCIA_PAGOS_ERP, BEA.SECUENCIA_PAGOS_ERP AS SECUENCIA_APLICADA
+   FROM FECXP_BIT_CONT_DIN_APER_ENC BE,
+           FECXP_ENC_REPLICAS_PROC_TMP CA,
+        FECXP_BIT_CONT_DIN_APER_ENC BEA
+   WHERE  BE.E_CODIGO = CA.E_CODIGO
+   AND        BE.SECUENCIA_PAGOS_ERP = CA.SECUENCIA_PAGOS_ERP
+   AND        BE.ESTATUS_CONT_DIN_APER = 'P'
+   AND        BEA.E_CODIGO = CA.E_CODIGO
+   AND        BEA.FOLIO_SET = CA.FOLIO_SET
+   AND        BEA.ESTATUS_CONT_DIN_APER = 'C'
+   AND        BEA.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')
+   ;
+   -- Eliminar su detalle reaperturado
+   DELETE FECXP_DET_PAGOS_PROCESADOS DEL_TABLE
+   WHERE EXISTS
+           (SELECT 1
+            FROM FECXP_REPLICAS_POR_CERRAR A
+            WHERE A.E_CODIGO = DEL_TABLE.E_CODIGO
+            AND        A.SECUENCIA_PAGOS_ERP = DEL_TABLE.SECUENCIA_PAGOS_ERP)
+   ;
+  -- replicar el detalle del folio aperturado
+    INSERT    INTO FECXP_DET_PAGOS_PROCESADOS (
+        E_CODIGO, SECUENCIA_PAGOS_ERP, SECUENCIA_DET_PAGOS_ERP, NUMERO_DE_PARTIDA_ERP,
+        SEC_DET_PAG_PROC, CODE_COMBINATION, IMPORTE_LINEA, ORACLE_SEGMENTO1, ORACLE_SEGMENTO2,
+        ORACLE_SEGMENTO3, ORACLE_SEGMENTO4, ORACLE_SEGMENTO5, ORACLE_SEGMENTO6, ORACLE_SEGMENTO7
+    )
+    SELECT CA.E_CODIGO,
+           CA.SECUENCIA_PAGOS_ERP,
+           D.SECUENCIA_DET_PAGOS_ERP,
+           D.NUMERO_DE_PARTIDA_ERP,
+           SEC_DET_PAG_PROC.NEXTVAL,
+           D.CODE_COMBINATION,
+           D.IMPORTE_LINEA * -1,
+           D.ORACLE_SEGMENTO1,
+           D.ORACLE_SEGMENTO2,
+           D.ORACLE_SEGMENTO3,
+           D.ORACLE_SEGMENTO4,
+           D.ORACLE_SEGMENTO5,
+           D.ORACLE_SEGMENTO6,
+           D.ORACLE_SEGMENTO7
+    FROM FECXP_DET_PAGOS_PROCESADOS D,
+         FECXP_REPLICAS_POR_CERRAR CA
+    WHERE D.E_CODIGO = CA.E_CODIGO
+    AND        D.SECUENCIA_PAGOS_ERP = CA.SECUENCIA_APLICADA
+    ;
+   -- Replicar el detalle de bitacora del registro aplicado y con fecha de esta aperturacion
+   INSERT INTO FECXP_BIT_CONT_DIN_APER_DET (
+               SECUENCIA_PAGOS_ERP, E_CODIGO, SECUENCIA_CONT_DIN_APER_DET, IMPORTE_SET, IMPORTE_AP, FEC_EJECUCION)
+   SELECT  CA.SECUENCIA_PAGOS_ERP, CA.E_CODIGO, SECUENCIA_CONT_DIN_APER_DET.NEXTVAL, D.IMPORTE_SET * -1, D.IMPORTE_AP * -1, D.FEC_EJECUCION
+   FROM FECXP_BIT_CONT_DIN_APER_DET D,
+               FECXP_REPLICAS_POR_CERRAR CA
+   WHERE D.E_CODIGO = CA.E_CODIGO
+   AND    D.SECUENCIA_PAGOS_ERP = CA.SECUENCIA_APLICADA
+   AND    D.FEC_EJECUCION = V_FEC_FEC_EJECUCION
+   ;
+   -- Actualizar el encabezado de bitacora correspondiente al registro que estaba cancelado
+   UPDATE FECXP_BIT_CONT_DIN_APER_ENC BE
+   SET  ESTATUS_CONT_DIN_APER = 'C',
+    FEC_ULTIMA_EJECUCION = V_FEC_FEC_EJECUCION
+   WHERE    EXISTS
+            (
+                SELECT    1
+                FROM    FECXP_REPLICAS_POR_CERRAR CA
+                WHERE    BE.E_CODIGO = CA.E_CODIGO
+                AND        BE.SECUENCIA_PAGOS_ERP = CA.SECUENCIA_PAGOS_ERP
+            )
+    AND        BE.ESTATUS_CONT_DIN_APER = 'P'
+    ;
+    ---Marcar los folios cancelados que entraron en este caso
+    UPDATE     FECXP_ENC_REPLICAS_PROC_TMP UP_TABLE
+    SET PROCESADO = 1
+    WHERE EXISTS
+        (SELECT 1 FROM FECXP_REPLICAS_POR_CERRAR A WHERE A.E_CODIGO = UP_TABLE.E_CODIGO AND A.SECUENCIA_PAGOS_ERP = UP_TABLE.SECUENCIA_PAGOS_ERP)
+    ;
+    /*Caso 2:  los folios cancelados ya existen en bitacora pero su aplicado esta sin cuadrar*/
+    /*Para los pendientes se elimino el detpagosproc y se volvio a generar por lo que no entran en este caso*/
+    INSERT INTO FECXP_CANCELADOS_SINCAMBIOS
+    (E_CODIGO, FOLIO_SET, SECUENCIA_PAGOS_ERP, SECUENCIA_APLICADA)
+       SELECT CA.E_CODIGO, CA.FOLIO_SET, CA.SECUENCIA_PAGOS_ERP, BEA.SECUENCIA_PAGOS_ERP AS SECUENCIA_APLICADA
+       FROM FECXP_BIT_CONT_DIN_APER_ENC BE,
+               FECXP_ENC_REPLICAS_PROC_TMP CA,
+            FECXP_BIT_CONT_DIN_APER_ENC BEA
+       WHERE  BE.E_CODIGO = CA.E_CODIGO
+       AND        BE.SECUENCIA_PAGOS_ERP = CA.SECUENCIA_PAGOS_ERP
+       AND        BEA.E_CODIGO = CA.E_CODIGO
+       AND        BEA.FOLIO_SET = CA.FOLIO_SET
+       AND        BEA.ESTATUS_CONT_DIN_APER = 'S'
+       AND        BEA.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')
+       ;
+     UPDATE FECXP_ENC_REPLICAS_PROC_TMP  UP_TABLE
+     SET PROCESADO=1
+     WHERE EXISTS
+         (SELECT 1
+            FROM FECXP_CANCELADOS_SINCAMBIOS A
+            WHERE A.E_CODIGO = UP_TABLE.E_CODIGO
+            AND        A.SECUENCIA_PAGOS_ERP = UP_TABLE.SECUENCIA_PAGOS_ERP
+         )
+       ;
+    /*Caso 3: Folios cancelados que tienen un aplicado en la bitacora*/
+    --- en este caso debe replicar si su aplicacion se encuentra en la bitacora, en caso de no encontrarla debe replicar en det_pagos_procesados
+    --- lo que exista
+   ---Obtener los cancelados nuevos que tienen un aplicado aperturado y no estan ya en la bitacora
+   INSERT INTO FECXP_CREAR_APERTURADOS
+   SELECT CA.E_CODIGO, CA.FOLIO_SET, CA.SECUENCIA_PAGOS_ERP, BE.SECUENCIA_PAGOS_ERP AS SECUENCIA_APLICADA
+   FROM FECXP_BIT_CONT_DIN_APER_ENC BE,
+           FECXP_ENC_REPLICAS_PROC_TMP CA
+   WHERE  BE.E_CODIGO = CA.E_CODIGO
+   AND        BE.FOLIO_SET = CA.FOLIO_SET
+   AND        BE.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')
+   AND    NOT EXISTS
+           (SELECT 1
+            FROM FECXP_BIT_CONT_DIN_APER_ENC BA
+            WHERE  BA.E_CODIGO = CA.E_CODIGO
+            AND        BA.SECUENCIA_PAGOS_ERP = CA.SECUENCIA_PAGOS_ERP
+         )
+   ;
+   --Replicar encabezado de bitacora para cancelados
+    INSERT    INTO FECXP_BIT_CONT_DIN_APER_ENC (
+                SECUENCIA_PAGOS_ERP, E_CODIGO, FOLIO_SET, MONEDA, FECHA_APLICACION,
+                TIPO_OPERACION, ID_BANCO, FORMA_PAGO, ESTATUS_MOVIMIENTO, ID_CHEQUERA,
+                CONCEPTO, BENEFICIARIO, IMPORTE_SET,ESTATUS_CONT_DIN_APER,FEC_PRIMERA_EJECUCION,
+                FEC_ULTIMA_EJECUCION,DIAS_VIGENCIA_APERTURA)
+    SELECT RE.SECUENCIA_PAGOS_ERP, RE.E_CODIGO, RE.FOLIO_SET, BE.MONEDA, RE.FECHA_APLICACION,
+            BE.TIPO_OPERACION, BE.ID_BANCO, BE.FORMA_PAGO, RE.ESTATUS_MOVIMIENTO, BE.ID_CHEQUERA,
+            BE.CONCEPTO, BE.BENEFICIARIO, BE.IMPORTE_SET * -1, BE.ESTATUS_CONT_DIN_APER,V_FEC_FEC_EJECUCION,
+            V_FEC_FEC_EJECUCION, BE.DIAS_VIGENCIA_APERTURA
+    FROM   FECXP_ENC_REPLICAS_PROC_TMP RE,
+               FECXP_BIT_CONT_DIN_APER_ENC BE,
+            FECXP_CREAR_APERTURADOS A
+    WHERE  RE.E_CODIGO = A.E_CODIGO
+    AND        RE.SECUENCIA_PAGOS_ERP = A.SECUENCIA_PAGOS_ERP
+    AND    BE.E_CODIGO = A.E_CODIGO
+    AND        BE.SECUENCIA_PAGOS_ERP = A.SECUENCIA_APLICADA
+    ;
+    -- Replicar el detalle de bitacora del registro aplicado, no importa si en la bitacora quedo pendiente, cerrado o sin cuadrar replica lo que esta
+    -- replicar solo lo que acaba de crear?
+    INSERT    INTO FECXP_BIT_CONT_DIN_APER_DET (
+            SECUENCIA_PAGOS_ERP, E_CODIGO, SECUENCIA_CONT_DIN_APER_DET, IMPORTE_SET, IMPORTE_AP, FEC_EJECUCION)
+    SELECT A.SECUENCIA_PAGOS_ERP, A.E_CODIGO, SECUENCIA_CONT_DIN_APER_DET.NEXTVAL, AD.IMPORTE_SET * -1, AD.IMPORTE_AP * -1, AD.FEC_EJECUCION
+    FROM FECXP_CREAR_APERTURADOS A,
+        FECXP_BIT_CONT_DIN_APER_DET AD
+    WHERE AD.E_CODIGO = A.E_CODIGO
+    AND AD.SECUENCIA_PAGOS_ERP = A.SECUENCIA_APLICADA
+    AND    AD.FEC_EJECUCION = V_FEC_FEC_EJECUCION
+    ;
+    /*Casos 3 y 4  Una vez replicada la bitacora, debe replicar el detalle aperturado tanto si el registro fue reaperturado como si no*/
+    /* en ambos casos se tiene un detalle aperturado que replicar debido a que se borro al inicio si lo tenia o crearlo si es nuevo*/
+    ---5)  Replica la aperturacion para todos los que estuvieron cancelados  y no tienen un detalle de aperturacion
+    -- Replicar el det_pagos_procesados
+    INSERT    INTO FECXP_DET_PAGOS_PROCESADOS (
+            E_CODIGO, SECUENCIA_PAGOS_ERP, SECUENCIA_DET_PAGOS_ERP, NUMERO_DE_PARTIDA_ERP,
+            SEC_DET_PAG_PROC, CODE_COMBINATION, IMPORTE_LINEA, ORACLE_SEGMENTO1, ORACLE_SEGMENTO2,
+            ORACLE_SEGMENTO3, ORACLE_SEGMENTO4, ORACLE_SEGMENTO5, ORACLE_SEGMENTO6, ORACLE_SEGMENTO7)
+    SELECT CA.E_CODIGO,
+               CA.SECUENCIA_PAGOS_ERP,
+               D.SECUENCIA_DET_PAGOS_ERP,
+               D.NUMERO_DE_PARTIDA_ERP,
+               SEC_DET_PAG_PROC.NEXTVAL,
+               D.CODE_COMBINATION,
+               D.IMPORTE_LINEA * -1,
+               D.ORACLE_SEGMENTO1,
+               D.ORACLE_SEGMENTO2,
+               D.ORACLE_SEGMENTO3,
+               D.ORACLE_SEGMENTO4,
+               D.ORACLE_SEGMENTO5,
+               D.ORACLE_SEGMENTO6,
+               D.ORACLE_SEGMENTO7
+        FROM       FECXP_ENC_PAGOS_ERP E,
+                 FECXP_ENC_REPLICAS_PROC_TMP CA,
+                FECXP_DET_PAGOS_PROCESADOS D
+        WHERE E.E_CODIGO = CA.E_CODIGO
+        AND    E.FOLIO_SET = CA.FOLIO_SET
+        AND E.ESTATUS_MOVIMIENTO NOT IN ('X','Y','Z')
+        AND CA.PROCESADO=0
+        AND D.E_CODIGO = E.E_CODIGO
+        AND D.SECUENCIA_PAGOS_ERP = E.SECUENCIA_PAGOS_ERP
+    ;
+    --ACTUALIZA LA BANDERA DE REGISTROS A BUSCAR EN ERP --
+    UPDATE    FECXP_ENC_PAGOS_ERP
+    SET        PROCESADO = 1
+    WHERE    FOLIO_SET = NVL (V_FOLIO_SET, FOLIO_SET)
+    AND        PROCESADO = 0;
+    COMMIT;
+    --invocar la ejecucion de la extraccion de cuentas de ingresos (EXCEPTO LOS DIAS LUNES POR LA MA?ANA ENTRE LAS 1:00 AM Y LAS 10:AM)
+    SELECT TO_CHAR (SYSDATE, 'DAY')
+     INTO v_dia
+     FROM DUAL;
+     v_dia:=TRIM(v_dia);
+   IF (UPPER (v_dia) = 'MONDAY' OR UPPER (v_dia) = 'LUNES')
+   THEN
+      IF     TO_DATE (TO_CHAR (SYSDATE, 'HH24:MI'), 'HH24:MI') > TO_DATE ('01:00', 'HH24:MI')
+         AND TO_DATE (TO_CHAR (SYSDATE, 'HH24:MI'), 'HH24:MI') < TO_DATE ('10:00', 'HH24:MI')
+      THEN
+         NULL;--NO LANZA LOS PROCESOS RESTANTES
+      ELSE
+      UPDATE FECXP_PPTO_EXTRACCION_PARAMS
+        SET FECHA_EXT_SIG_EJECUCION = SYSDATE,
+        ESTATUS_PPTO_SIG_EJECUCION = 'BEGIN FECXP_GET_CTAS_CONT_INGR; END;',
+        USUARIO_PPTO_SIG_EJECUCION = 'EJB',
+        FEC_INI = SYSDATE,
+        ESTATUS_EXT_ULT_EJECUCION = 'ERROR',
+        ALERTAR=0,
+        ESTATUS_PROCESO='EN PROCESO'
+       WHERE PROCESO_ID = 16;
+      END IF;
+   ELSE
+   UPDATE FECXP_PPTO_EXTRACCION_PARAMS
+        SET FECHA_EXT_SIG_EJECUCION = SYSDATE,
+        ESTATUS_PPTO_SIG_EJECUCION = 'BEGIN FECXP_GET_CTAS_CONT_INGR; END;',
+        USUARIO_PPTO_SIG_EJECUCION = 'EJB',
+        FEC_INI = SYSDATE,
+        ESTATUS_EXT_ULT_EJECUCION = 'ERROR',
+        ALERTAR=0,
+        ESTATUS_PROCESO='EN PROCESO'
+    WHERE PROCESO_ID = 16;
+   END IF;
+    COMMIT;
+    /*Iniciar la ejecucion automatica detalle reales
+    UPDATE FECXP_PPTO_EXTRACCION_PARAMS
+        SET FEC_INI = SYSDATE,
+        ESTATUS_EXT_ULT_EJECUCION = 'ERROR',
+        ALERTAR=0,
+        ESTATUS_PROCESO='EN EJECUCION'
+    WHERE PROCESO_ID = 11;
+    UPDATE FECXP_PPTO_EXTRACCION_PARAMS
+        SET ESTATUS_EXT_ULT_EJECUCION = 'ERROR',
+        ALERTAR=0,
+        ESTATUS_PROCESO='EN ESPERA'
+    WHERE PROCESO_ID =12;
+    COMMIT;
+    */
+-- END;
+    EXCEPTION
+     WHEN NO_DATA_FOUND THEN
+      ROLLBACK;
+      RAISE_APPLICATION_ERROR(-20000,'Error:' || SQLCODE || ' - ' || SQLERRM);
+     WHEN OTHERS THEN
+       ROLLBACK;
+       RAISE_APPLICATION_ERROR(-20000,'Error:' || SQLCODE || ' - ' || SQLERRM);
+END FECXP_LLENA_PAGOS_SET_ERP;
+/

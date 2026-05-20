@@ -1,0 +1,42 @@
+CREATE OR REPLACE EDITIONABLE FUNCTION "FECXC"."FECXC_EXISTE_TITULO2_FN" (
+										PST_TITULO2 IN VARCHAR)
+RETURN NUMBER
+  AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+    LIN_ID NUMBER;
+  BEGIN
+    SELECT COUNT(ID_TITULO)
+    INTO LIN_ID
+    FROM XXFECXC_TIT_REP_COMER_TAB
+    WHERE DES_TITULO     = PST_TITULO2
+    AND IND_ELIJE_TITULO = 2;
+    RETURN LIN_ID;
+  END ;
+/
+--Source_DDLS
+
+  CREATE OR REPLACE EDITIONABLE FUNCTION "FECXC"."FECXC_EXISTE_TITULO2_FN" (
+										PST_TITULO2 IN VARCHAR)
+RETURN NUMBER
+  AS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+    LIN_ID NUMBER;
+  BEGIN
+    SELECT COUNT(ID_TITULO)
+    INTO LIN_ID
+    FROM XXFECXC_TIT_REP_COMER_TAB
+    WHERE DES_TITULO     = PST_TITULO2
+    AND IND_ELIJE_TITULO = 2;
+    RETURN LIN_ID;
+  END ;
+/

@@ -1,0 +1,26 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "FECXC"."FECI_MODIFICA_TIPO_CAMBIO_RECIBO_MASIVO_PR" 
+    (p_USUARIO IN NUMBER)
+IS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+   CURSOR cursor_resultados IS
+        SELECT FOLIO_RECIBO, TIPO_RECIBO
+        FROM FECXC.FECI_RECIBOS_VW
+        WHERE TIPO_CAMBIO_ORIGEN IS NULL AND TIPO_RECIBO = 'BATCH';
+    v_FOLIO FECXC.FECI_RECIBOS_VW.FOLIO_RECIBO%TYPE;
+    v_TIPO FECXC.FECI_RECIBOS_VW.TIPO_RECIBO%TYPE;
+BEGIN
+    FOR registro IN cursor_resultados LOOP
+        v_FOLIO := registro.FOLIO_RECIBO;
+        v_TIPO := registro.TIPO_RECIBO;
+        DBMS_OUTPUT.PUT_LINE('Valor de FOLIO_RECIBO: ' || v_FOLIO);
+        DBMS_OUTPUT.PUT_LINE('Valor de TIPO_RECIBO: ' || v_TIPO);
+        -- Llama al procedimiento PROC_ACCION con los valores del registro
+        FECXC.FECI_MODIFICA_TIPO_CAMBIO_RECIBO_PR(v_FOLIO, v_TIPO, p_USUARIO);
+    END LOOP;
+END FECI_MODIFICA_TIPO_CAMBIO_RECIBO_MASIVO_PR;
+/

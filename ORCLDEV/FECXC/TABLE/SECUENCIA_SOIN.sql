@@ -1,0 +1,7 @@
+CREATE TABLE "FECXC"."secuencia_soin" 
+   (	"NOPARCHE" VARCHAR2(8), 
+	"SISTEM" VARCHAR2(15), 
+	"NOPDESA" VARCHAR2(15), 
+	"FECHA" TIMESTAMP (6), 
+	"timestamp" TIMESTAMP (6)
+   ) ;
