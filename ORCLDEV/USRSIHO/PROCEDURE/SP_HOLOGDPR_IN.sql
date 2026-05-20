@@ -1,0 +1,28 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "USRSIHO"."SP_HOLOGDPR_IN" (PS_KEYDEP VARCHAR2, PN_KEYRPH NUMBER, PD_FECHAG DATE,     PN_KEYEMP NUMBER,   PS_KEYPUE VARCHAR2,
+                                            PN_CAPINI NUMBER,   PN_CAPFIN NUMBER, PN_NUMCAP NUMBER,   PS_KEYCON VARCHAR2, PS_MARCON VARCHAR2,
+                                            PS_MARCOS VARCHAR2, PN_COSUNI NUMBER, PS_KEYSUE VARCHAR2, PN_KEYTCO NUMBER,   PN_KEYFOL NUMBER,
+                                            PN_KEYUSU NUMBER,   PN_MINSAL NUMBER, PN_MINEXT NUMBER,   PN_MINCOM NUMBER,
+                                            LN_KEYSEC OUT NUMBER) IS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+BEGIN
+        LN_KEYSEC := 0;
+        INSERT INTO HOLOGDPR (GDP_KEYDEP, GDP_KEYRPH, GDP_FECHAG, GDP_KEYEMP, GDP_KEYPUE,
+                              GDP_CAPINI, GDP_CAPFIN, GDP_NUMCAP, GDP_KEYCON, GDP_MARCON,
+                              GDP_MARCOS, GDP_COSUNI, GDP_KEYSUE, GDP_KEYTCO, GDP_KEYFOL,
+                              GDP_KEYUSU, GDP_MINSAL, GDP_MINEXT, GDP_MINCOM)
+--        VALUES ('0',853092,'09/05/2017',490193654,1043,
+--                13,13,1,'HIT','X',
+--                'X',3145.00,'','','',
+--                2049,540,1230,300,60)
+       VALUES (PS_KEYDEP, PN_KEYRPH, PD_FECHAG, PN_KEYEMP, PS_KEYPUE,
+               PN_CAPINI, PN_CAPFIN, PN_NUMCAP, PS_KEYCON, PS_MARCON,
+               PS_MARCOS, PN_COSUNI, PS_KEYSUE, PN_KEYTCO, PN_KEYFOL,
+               PN_KEYUSU, PN_MINSAL, PN_MINEXT, PN_MINCOM)
+        RETURNING GDP_KEYSEC INTO LN_KEYSEC;
+END;
+/

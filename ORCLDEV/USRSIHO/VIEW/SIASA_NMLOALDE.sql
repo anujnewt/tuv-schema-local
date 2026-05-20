@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."SIASA_NMLOALDE" ("ALD_KEYDEP", "ALD_KEYTPR", "ALD_KEYEMP", "ALD_PERTRA") AS 
+  SELECT ald_keydep,ald_keytpr,ald_keyemp,ald_pertra FROM nmloalde;

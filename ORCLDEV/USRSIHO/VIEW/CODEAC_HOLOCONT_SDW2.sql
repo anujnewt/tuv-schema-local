@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."CODEAC_HOLOCONT_SDW2" ("CON_KEYEMP", "CON_KEYDEP", "CON_KEYPUE", "CON_FECINI", "CON_KEYTCO", "CONSEC", "CON_KEYFOL", "ESTATUS", "CON_FECCAN") AS 
+  SELECT con_keyemp,con_keydep,con_keypue,con_fecini,con_keytco,CONSEC,con_keyfol,estatus,CON_FECCAN FROM holocont_sdw2;

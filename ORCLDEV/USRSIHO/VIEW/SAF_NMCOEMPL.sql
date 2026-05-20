@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."SAF_NMCOEMPL" ("EMP_REGRFC", "EMP_KEYEMP", "EMP_NOMEMP", "EMP_CVEBAN", "EMP_CTABAN", "EMP_FECING", "EMP_DOMEMP", "EMP_COLEMP", "EMP_ENTEMP", "EMP_CODEMP", "EMP_TELEMP", "EMP_CIDEMP", "EMP_SALMES", "EMP_FORPAG", "EMP_STATUS", "EMP_CA2AUX") AS 
+  SELECT	emp_regrfc,emp_keyemp,emp_nomemp,emp_cveban,emp_ctaban,emp_fecing,emp_domemp,emp_colemp,emp_entemp,emp_codemp,emp_telemp,emp_cidemp,emp_salmes,emp_forpag,emp_status,emp_ca2aux FROM nmcoempl;

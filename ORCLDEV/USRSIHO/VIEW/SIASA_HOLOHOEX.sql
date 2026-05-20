@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."SIASA_HOLOHOEX" ("HOE_PERTRA", "HOE_JORNAD", "HOE_KEYTPR", "HOE_JORCOS", "HOE_JORTIE") AS 
+  SELECT hoe_pertra,hoe_jornad,hoe_keytpr,hoe_jorcos,hoe_jortie FROM holohoex;

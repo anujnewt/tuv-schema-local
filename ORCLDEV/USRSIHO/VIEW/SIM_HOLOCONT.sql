@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."SIM_HOLOCONT" ("CON_KEYPLZ", "CON_KEYFOL", "CON_KEYDEP", "CON_DIAPAG", "CON_FECINI", "CON_COSUNI", "CON_NUMCAP", "CON_KEYEMP", "CON_KEYPUE", "CON_KEYTCO", "CON_STSPAG", "CON_KEYTVA", "CON_FECOTO", "CON_KEYUSG") AS 
+  SELECT con_keyplz,con_keyfol,con_keydep,con_diapag,con_fecini,con_cosuni,con_numcap,con_keyemp,con_keypue,con_keytco,con_stspag,con_keytva ,con_fecoto,con_keyusg FROM holocont;

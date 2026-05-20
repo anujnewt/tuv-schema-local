@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."SIASA_NMCOEMPL" ("EMP_KEYEMP", "EMP_NOMEMP", "EMP_NOMCOR", "EMP_KEYPRO", "EMP_FECMOD") AS 
+  SELECT emp_keyemp,emp_nomemp,emp_nomcor,emp_keypro,emp_fecmod FROM nmcoempl;

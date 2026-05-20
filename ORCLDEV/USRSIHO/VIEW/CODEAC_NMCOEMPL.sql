@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."CODEAC_NMCOEMPL" ("EMP_KEYPRO", "EMP_KEYEMP", "EMP_NOMEMP", "EMP_RECURP", "EMP_REGRFC") AS 
+  SELECT emp_keypro,emp_keyemp,emp_nomemp,emp_recurp,emp_regrfc FROM nmcoempl;

@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."SIM_HOLOHGDP" ("HGD_CAPINI", "HGD_CAPFIN", "HGD_KEYRPH", "HGD_KEYFOL", "HGD_KEYTCO", "HGD_FECHAG") AS 
+  SELECT hgd_capini,hgd_capfin,hgd_KeyRph,hgd_Keyfol,hgd_Keytco,hgd_fechag FROM holohgdp;

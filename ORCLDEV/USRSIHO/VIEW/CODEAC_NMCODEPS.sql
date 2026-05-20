@@ -1,0 +1,2 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."CODEAC_NMCODEPS" ("DEP_KEYDEP", "DEP_DESDEP", "DEP_NU4AUX", "DEP_NU5AUX", "DEP_NU3AUX") AS 
+  SELECT dep_keydep,dep_desdep,dep_nu4aux,dep_nu5aux,dep_nu3aux FROM nmcodeps;

@@ -1,0 +1,3 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "USRSIHO"."BANCOS" ("BAN_KEYBAN", "BAN_DESBAN") AS 
+  SELECT unique(ban_keyban),ban_desban  FROM nmlobanc
+ORDER BY ban_keyban ASC;
