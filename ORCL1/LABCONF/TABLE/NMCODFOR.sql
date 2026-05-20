@@ -1,0 +1,31 @@
+-- dmap_object_gen_tag : type : table name : nmcodfor
+set search_path = labconf,oracle,dmap_extension,public;
+create table "nmcodfor"  (
+for_keyfor varchar(16),
+for_aplica varchar(1),
+for_numsec numeric(5),
+for_keytab varchar(8),
+for_keycam varchar(16),
+for_tipdat numeric(5),
+for_tammax numeric(5),
+for_format numeric(5),
+for_alinea numeric(5),
+for_renglo numeric(5),
+for_column numeric(5),
+for_imprim varchar(1),
+for_parusu varchar(1),
+for_camdep varchar(1),
+for_condi1 varchar(20),
+for_valco1 varchar(1),
+for_condi2 varchar(20),
+for_valco2 varchar(1),
+for_entimp varchar(40),
+for_sinimp varchar(40),
+for_funcio varchar(6),
+for_funca1 varchar(16),
+for_funca2 varchar(16),
+for_funnu1 numeric(5),
+for_funnu2 numeric(5),
+for_funtot varchar(6),
+for_indtru varchar(1)
+) ;

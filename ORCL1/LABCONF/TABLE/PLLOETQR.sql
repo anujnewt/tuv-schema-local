@@ -1,0 +1,32 @@
+-- dmap_object_gen_tag : type : table name : plloetqr
+set search_path = labconf,oracle,dmap_extension,public;
+create table "plloetqr"  (
+etq_idepro varchar(10),
+etq_idepcc varchar(15),
+etq_keyusu numeric(10),
+etq_nomcia varchar(60),
+etq_keymin varchar(5),
+etq_desmin varchar(30),
+etq_keyest varchar(3),
+etq_desest varchar(30),
+etq_keylib varchar(5),
+etq_deslib varchar(30),
+etq_keyhoj varchar(5),
+etq_deshoj varchar(30),
+etq_fecreg timestamp(0),
+etq_horreg varchar(8),
+etq_col001 varchar(40),
+etq_col002 varchar(40),
+etq_col003 varchar(40),
+etq_col004 varchar(40),
+etq_col005 varchar(40),
+etq_col006 varchar(40),
+etq_col007 varchar(40),
+etq_col008 varchar(40),
+etq_col009 varchar(40),
+etq_col010 varchar(40),
+etq_col011 varchar(40),
+etq_col012 varchar(40),
+etq_col013 varchar(40),
+etq_col014 varchar(40)
+) ;

@@ -1,0 +1,17 @@
+create or replace procedure labconf."sp_fecha"  () as $body$
+declare
+-- pgv moved types start
+-- pgv moved types end
+wd_fec_mov timestamp(0);
+ws_ide_fec varchar(10);
+ws_ide_hor varchar(8);
+begin
+ws_ide_fec:='_FECHADIA_';
+call sp_glfechor (wd_fec_mov, ws_ide_hor);
+delete from glwkcrys
+where cry_nomrep=ws_ide_fec;
+insert into glwkcrys( cry_nomrep,cry_dat001,cry_chr012,cry_chr017)
+values (ws_ide_fec,wd_fec_mov,user,ws_ide_hor);end;
+$body$
+language plpgsql
+;
