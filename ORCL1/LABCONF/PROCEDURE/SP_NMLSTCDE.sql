@@ -1,0 +1,449 @@
+CREATE OR REPLACE NONEDITIONABLE PROCEDURE "LABCONF"."SP_NMLSTCDE" (ws_nom_rep IN VARCHAR2,ws_ide_pcc IN VARCHAR2,wn_key_usu IN  NUMBER,ws_key_men IN VARCHAR2,ws_hor_reg  IN VARCHAR2,ws_lis_per  IN VARCHAR2,ws_lis_pro IN VARCHAR2,ws_lis_dep IN VARCHAR2 ) IS
+-- PGV moved types start
+
+-- PGV moved types end
+
+-- PGV moved types start
+-- PGV moved types end
+	wn_mov_dep NUMBER(5);
+		wn_sum_pro NUMBER(10);
+		wn_sum_per NUMBER(10);
+		wn_mov_emp NUMBER(10);
+		ws_mov_con VARCHAR2(3);
+		ws_mov_per VARCHAR2(7);
+		wn_mov_pro NUMBER(5);
+		ws_cod_imp VARCHAR2(2);
+		ws_mov_cia VARCHAR2(2);
+		ws_des_pro VARCHAR2(20);
+		ws_des_nom VARCHAR2(20);
+		ws_des_not VARCHAR2(40);
+		ws_des_con VARCHAR2(40);
+		ws_des_cia VARCHAR2(60);
+		wd_fec_ini DATE;
+		wd_fec_fin DATE;
+		ws_lis_nom VARCHAR2(40);
+		ws_des_lis VARCHAR2(50);
+		ws_key_cia VARCHAR2(5);
+		ws_des_dep VARCHAR2(40);
+		ws_key_cam VARCHAR2(10);
+		ws_des_etq VARCHAR2(10);
+		ws_des_etq1 VARCHAR2(40);
+		ws_etq_001 VARCHAR2(10);
+		ws_etq_002 VARCHAR2(10);
+		ws_etq_003 VARCHAR2(10);
+		ws_etq_004 VARCHAR2(40);
+		ws_etq_005 VARCHAR2(40);
+		ws_etq_006 VARCHAR2(10);
+		ws_etq_007 VARCHAR2(40);
+		ws_etq_008 VARCHAR2(16);
+		ws_dsp_cam VARCHAR2(20);
+		wn_dsp_001 NUMBER(5);
+		wn_dsp_002 NUMBER(5);
+		wn_dsp_003 NUMBER(5);
+		wn_dsp_004 NUMBER(5);
+		wn_dsp_005 NUMBER(5);
+		wn_dsp_006 NUMBER(5);
+		wn_ant_pro NUMBER(5);
+		ws_ant_per VARCHAR2(7);
+		ws_ant_con VARCHAR2(3);
+		wn_ant_nom NUMBER(5);
+		ws_ant_cod VARCHAR2(2);
+		wn_ant_emp NUMBER(10);
+		ws_ant_dep VARCHAR2(16);
+		ws_mov_dep VARCHAR2(16);
+		wn_tot_reg NUMBER(10);
+		wn_num_reg NUMBER(10);
+		ws_hor_act VARCHAR2(8);
+		ws_dia_act  DATE;
+		wn_con_tar NUMBER(10);
+		wn_tot_emp NUMBER(10);
+		wn_tot_can NUMBER(18,2);
+		wn_tot_imp NUMBER(18,2);
+		wn_tot_tra NUMBER(10);
+		wn_mov_nom NUMBER(5);
+		wn_cic_los NUMBER(10);
+		BEGIN
+	LABCONF.sp_glfechor(ws_dia_act, ws_hor_act);
+	wn_tot_reg:=0;
+	INSERT INTO LABCONF.glcoresu( res_idepro,res_idepcc,res_keyusu,res_fecini,res_horini, res_horreg,res_totreg,res_status)
+		VALUES(ws_nom_rep,ws_ide_pcc,wn_key_usu,ws_dia_act,ws_hor_act,ws_hor_reg,wn_tot_reg,'P'); COMMIT;
+		DELETE FROM LABCONF.glwkcrys
+	WHERE cry_nomrep = ws_nom_rep
+	AND cry_idepcc = ws_ide_pcc
+	AND cry_keyusu = wn_key_usu; COMMIT;
+		ws_des_lis:='No existe nombre del Reporte';
+	FOR c_lista IN ( SELECT lis_deslis FROM LABCONF.glcolist
+	WHERE lis_keylis = ws_nom_rep ) LOOP
+		ws_des_lis :=c_lista.lis_deslis;
+			wn_cic_los:=0;
+	END LOOP;
+	ws_etq_001:='----------';
+	ws_etq_002:='----------';
+	ws_etq_003:='----------';
+	ws_etq_004:='----------';
+	ws_etq_005:='----------';
+	ws_etq_006:='----------';
+	ws_etq_007:='----------';
+	ws_etq_008:='----------';
+	FOR c_etiqueta IN ( SELECT cam_keycam, cam_descor FROM LABCONF.glcocamp
+	WHERE cam_keytab = 'nmwkmovt' ) LOOP
+		ws_key_cam :=c_etiqueta.cam_keycam;
+			ws_des_etq :=c_etiqueta.cam_descor;
+	IF (ws_key_cam='mov_keypro' ) THEN
+	ws_etq_001:=ws_des_etq;
+	END IF;
+	IF (ws_key_cam='mov_keyper' ) THEN
+	ws_etq_002:=ws_des_etq;
+	END IF;
+	IF (ws_key_cam='mov_keycon' ) THEN
+	ws_etq_003:=ws_des_etq;
+	END IF;
+	IF (ws_key_cam='mov_keydep' ) THEN
+	ws_etq_008:=ws_des_etq;
+	END IF;
+	IF (ws_key_cam='mov_cantid' ) THEN
+	ws_etq_004:=ws_des_etq;
+	END IF;
+	IF (ws_key_cam='mov_import' ) THEN
+	ws_etq_005:=ws_des_etq;
+	END IF;
+	END LOOP;
+	FOR c_des_nom IN ( SELECT cam_keycam, cam_descor FROM LABCONF.glcocamp
+	WHERE cam_keytab = 'nmlonomi' ) LOOP
+		ws_key_cam :=c_des_nom.cam_keycam;
+			ws_des_etq :=c_des_nom.cam_descor;
+	IF (ws_key_cam='nom_keynom' ) THEN
+	ws_etq_006:=ws_des_etq;
+	END IF;
+	END LOOP;
+	FOR ws_des_tip IN ( SELECT cam_keycam, cam_descam FROM LABCONF.glcocamp
+	WHERE cam_keytab = 'nmlonomi' ) LOOP
+		ws_key_cam :=ws_des_tip.cam_keycam;
+			ws_des_etq1 :=ws_des_tip.cam_descam;
+	IF (ws_key_cam='nom_destip' ) THEN
+	ws_etq_007:=ws_des_etq1;
+	END IF;
+	END LOOP;
+	wn_dsp_001:=0;
+	wn_dsp_002:=0;
+	wn_dsp_003:=0;
+	wn_dsp_004:=0;
+	wn_dsp_005:=0;
+	wn_dsp_006:=0;
+	FOR c_desplieg IN ( SELECT rec_keycam, rec_despli FROM LABCONF.glcoreca
+	WHERE rec_keytab = 'nmwkmovt'
+	AND rec_keymen = ws_key_men ) LOOP
+		ws_key_cam :=c_desplieg.rec_keycam;
+			ws_dsp_cam :=c_desplieg.rec_despli;
+	IF ((ws_key_cam='wn_mov_pro') AND (ws_dsp_cam='N') ) THEN
+	wn_dsp_001:=1;
+	END IF;
+	IF ((ws_key_cam='ws_mov_per') AND (ws_dsp_cam='N') ) THEN
+	wn_dsp_002:=1;
+	END IF;
+	IF ((ws_key_cam='ws_mov_con') AND (ws_dsp_cam='N') ) THEN
+	wn_dsp_003:=1;
+	END IF;
+	IF ((ws_key_cam='wn_tot_can') AND (ws_dsp_cam='N') ) THEN
+	wn_dsp_004:=1;
+	END IF;
+	IF ((ws_key_cam='wn_tot_imp') AND (ws_dsp_cam='N') ) THEN
+	wn_dsp_005:=1;
+	END IF;
+	IF ((ws_key_cam='ws_mov_dep') AND (ws_dsp_cam='N') ) THEN
+	wn_dsp_006:=1;
+	END IF;
+	END LOOP;
+	wn_mov_dep:=0;
+	ws_ant_con:='@@@';
+	wn_ant_nom:=-9999;
+	ws_ant_per:='@@@';
+	wn_ant_pro:=-999;
+	ws_ant_cod:='@@';
+	ws_ant_dep:='@@@@';
+	ws_mov_cia:='..';
+	wn_num_reg:=0;
+	wn_con_tar:=0;
+	wn_tot_can:=0;
+	wn_tot_imp:=0;
+	wn_tot_tra:=0;
+	wn_tot_tra:=0;
+	FOR c_nmlstcic IN ( SELECT mov_keypro, mov_keyper, mov_keydep, mov_codimp, mov_keycon,  SUM(mov_cantid ) alias6,  SUM(mov_import ) alias7,  COUNT(* ) alias8
+  FROM LABCONF.nmwkmovt, LABCONF.glwkrang
+	WHERE mov_keypro = ran_keypro
+	AND mov_keyper = ran_keyper
+	AND  mov_keydep = ran_keydep
+	AND ran_nomrep = ws_nom_rep
+	AND  ran_idepcc = ws_ide_pcc
+	AND  ran_keyusu = wn_key_usu
+	AND ran_keypro IS NOT NULL
+	AND ran_keydep IS NOT NULL
+	AND ran_keyper IS NOT NULL
+	GROUP BY mov_keydep, mov_keypro, mov_keyper,  mov_codimp, mov_keycon
+	ORDER BY mov_keydep, mov_keypro, mov_keyper,  mov_codimp, mov_keycon
+ ) LOOP
+		wn_mov_pro :=c_nmlstcic.mov_keypro;
+			ws_mov_per :=c_nmlstcic.mov_keyper;
+			ws_mov_dep :=c_nmlstcic.mov_keydep;
+			ws_cod_imp :=c_nmlstcic.mov_codimp;
+			ws_mov_con :=c_nmlstcic.mov_keycon;
+			wn_tot_can :=c_nmlstcic.alias6;
+			wn_tot_imp :=c_nmlstcic.alias7;
+			wn_con_tar :=c_nmlstcic.alias8;
+	IF ((ws_mov_dep IS NULL) AND (ws_ant_dep=1) ) THEN
+	wn_mov_dep:=1;
+	BEGIN SELECT  COUNT( DISTINCT mov_keyemp ) alias1
+	INTO wn_mov_emp FROM LABCONF.nmwkmovt
+	WHERE mov_keyper IN (
+	SELECT ran_keyper FROM LABCONF.glwkrang
+	WHERE ran_nomrep = ws_nom_rep
+	AND ran_idepcc = ws_ide_pcc
+	AND ran_keyusu = wn_key_usu
+	AND ran_keydep IS NOT NULL )
+	AND mov_keypro IN (
+	SELECT ran_keypro FROM LABCONF.glwkrang
+	WHERE ran_nomrep = ws_nom_rep
+	AND ran_idepcc = ws_ide_pcc
+	AND ran_keyusu = wn_key_usu
+	AND ran_keypro IS NOT NULL )
+	AND mov_ca2aux IS NULL;
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+  BEGIN SELECT  COUNT( DISTINCT mov_keyemp ) alias1
+	INTO wn_sum_pro FROM LABCONF.nmwkmovt
+	WHERE mov_keyper IN (
+	SELECT ran_keyper FROM LABCONF.glwkrang
+	WHERE ran_nomrep = ws_nom_rep
+	AND ran_idepcc = ws_ide_pcc
+	AND ran_keyusu = wn_key_usu
+	AND ran_keydep IS NOT NULL )
+	AND mov_keypro = wn_mov_pro
+	AND mov_ca2aux IS NULL;
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+  BEGIN SELECT  COUNT( DISTINCT mov_keyemp ) alias1
+	INTO wn_sum_per FROM LABCONF.nmwkmovt
+	WHERE mov_keyper = ws_mov_per
+	AND mov_keypro = wn_mov_pro
+	AND mov_ca2aux IS NULL;
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+   ELSE
+	IF (ws_mov_dep != ws_ant_dep ) THEN
+	BEGIN SELECT  COUNT( DISTINCT mov_keyemp ) alias1
+	INTO wn_mov_emp FROM LABCONF.nmwkmovt
+	WHERE mov_keyper IN (
+	SELECT ran_keyper FROM glwkrang
+	WHERE ran_nomrep = ws_nom_rep
+	AND ran_idepcc = ws_ide_pcc
+	AND ran_keyusu = wn_key_usu
+	AND ran_keydep IS NOT NULL )
+	AND mov_keypro IN (
+	SELECT ran_keypro FROM LABCONF.glwkrang
+	WHERE ran_nomrep = ws_nom_rep
+	AND ran_idepcc = ws_ide_pcc
+	AND ran_keyusu = wn_key_usu
+	AND ran_keypro IS NOT NULL )
+	AND mov_ca2aux = ws_mov_dep;
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+  BEGIN SELECT  COUNT( DISTINCT mov_keyemp ) alias1
+	INTO wn_sum_pro FROM nmwkmovt
+	WHERE mov_keyper IN (
+	SELECT ran_keyper FROM LABCONF.glwkrang
+	WHERE ran_nomrep = ws_nom_rep
+	AND ran_idepcc = ws_ide_pcc
+	AND ran_keyusu = wn_key_usu
+	AND ran_keydep IS NOT NULL )
+	AND mov_keypro = wn_mov_pro
+	AND mov_ca2aux = ws_mov_dep;
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+  BEGIN SELECT  COUNT( DISTINCT mov_keyemp ) alias1
+	INTO wn_sum_per FROM nmwkmovt
+	WHERE mov_keyper = ws_mov_per
+	AND mov_keypro = wn_mov_pro
+	AND mov_ca2aux = ws_mov_dep;
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+   ELSE
+	IF (wn_mov_pro != wn_ant_pro ) THEN
+	BEGIN SELECT  COUNT( DISTINCT mov_keyemp ) alias1
+	INTO wn_sum_pro FROM LABCONF.nmwkmovt
+	WHERE mov_keyper IN (
+	SELECT ran_keyper FROM LABCONF.glwkrang
+	WHERE ran_nomrep = ws_nom_rep
+	AND ran_idepcc = ws_ide_pcc
+	AND ran_keyusu = wn_key_usu
+	AND ran_keydep IS NOT NULL )
+	AND mov_keypro = wn_mov_pro
+	AND mov_ca2aux = ws_mov_dep;
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+  BEGIN SELECT  COUNT( DISTINCT mov_keyemp ) alias1
+	INTO wn_sum_per FROM LABCONF.nmwkmovt
+	WHERE mov_keyper = ws_mov_per
+	AND mov_keypro = wn_mov_pro
+	AND mov_ca2aux = ws_mov_dep;
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+   ELSE
+	IF (ws_mov_per != ws_ant_per ) THEN
+	BEGIN SELECT  COUNT( DISTINCT mov_keyemp ) alias1
+	INTO wn_sum_per FROM LABCONF.nmwkmovt
+	WHERE mov_keyper = ws_mov_per
+	AND mov_keypro = wn_mov_pro
+	AND mov_ca2aux = ws_mov_dep;
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+  END IF;
+		END IF;
+		END IF;
+		END IF;
+	IF (ws_ant_dep IS NULL ) THEN
+	ws_des_dep:='No Existe Departamento';
+	 ELSE
+	IF (ws_ant_dep != ws_mov_dep ) THEN
+	ws_des_dep:='No Existe Departamento';
+	FOR c_for_dep IN ( SELECT dep_desdep FROM LABCONF.nmcodeps
+	WHERE dep_keydep = ws_mov_dep ) LOOP
+		ws_des_dep :=c_for_dep.dep_desdep;
+			wn_cic_los:=0;
+	END LOOP;
+	ws_ant_dep:=ws_mov_dep;
+	END IF;
+		END IF;
+	IF (wn_ant_pro IS NULL ) THEN
+	ws_des_cia:='Compania No existe...';
+	ws_mov_cia:='..';
+	ws_des_pro:=' No Existe Proceso';
+	 ELSE
+	IF (wn_ant_pro != wn_mov_pro ) THEN
+	ws_des_pro:='No Existe Proceso..';
+	ws_mov_cia:='..';
+	FOR c_for_pro IN ( SELECT pro_despro, pro_keycia FROM LABCONF.nmloproc
+	WHERE pro_keypro = wn_mov_pro ) LOOP
+		ws_des_pro :=c_for_pro.pro_despro;
+			ws_mov_cia :=c_for_pro.pro_keycia;
+			wn_cic_los:=0;
+	END LOOP;
+	ws_des_cia:='Compania No existe...';
+	FOR  c_des_cia IN ( SELECT cia_descia FROM LABCONF.nmlocias
+	WHERE cia_keycia = ws_mov_cia ) LOOP
+		ws_des_cia := c_des_cia.cia_descia;
+			wn_cic_los:=0;
+	END LOOP;
+	wn_ant_pro:=wn_mov_pro;
+	END IF;
+		END IF;
+	IF (ws_ant_con IS NULL ) THEN
+	ws_des_con:='No Existe Concepto...';
+	 ELSE
+	IF (ws_ant_con != ws_mov_con ) THEN
+	ws_des_con:='No Existe Concepto...';
+	FOR c_for_con IN ( SELECT con_descon FROM LABCONF.nmloconc
+	WHERE con_keycon = ws_mov_con ) LOOP
+		ws_des_con :=c_for_con.con_descon;
+			wn_cic_los:=0;
+	END LOOP;
+	ws_ant_con:=ws_mov_con;
+	END IF;
+		END IF;
+	IF (ws_ant_cod != ws_cod_imp ) THEN
+	ws_ant_cod:=ws_cod_imp;
+	END IF;
+	IF (ws_ant_per IS NULL ) THEN
+	wd_fec_ini:=ws_dia_act;
+	wd_fec_fin:=ws_dia_act;
+	 ELSE
+	IF (ws_ant_per != ws_mov_per ) THEN
+	wd_fec_ini:=ws_dia_act;
+	wd_fec_fin:=ws_dia_act;
+	FOR  c_for_per IN ( SELECT per_fecini, per_fecfin, per_keynom FROM LABCONF.nmloperi
+	WHERE  per_keyper = ws_mov_per
+	AND per_keypro = wn_mov_pro ) LOOP
+		wd_fec_ini := c_for_per.per_fecini;
+			wd_fec_fin := c_for_per.per_fecfin;
+			wn_mov_nom := c_for_per.per_keynom;
+			wn_cic_los:=0;
+	END LOOP;
+	ws_ant_per:=ws_mov_per;
+	END IF;
+		END IF;
+	IF (wn_ant_nom IS NULL ) THEN
+	ws_des_nom:='No Existe Nomina.';
+	 ELSE
+	IF (wn_ant_nom != wn_mov_nom ) THEN
+	ws_des_nom:='No Existe Nomina...';
+	FOR c_for_nom IN ( SELECT nom_destip FROM LABCONF.nmlonomi
+	WHERE nom_keynom = wn_mov_nom ) LOOP
+		ws_des_not :=c_for_nom.nom_destip;
+			wn_cic_los:=0;
+	END LOOP;
+	FOR c_lis_nom IN ( SELECT ran_keycat FROM LABCONF.glwkrang
+	WHERE ran_nomrep = ws_nom_rep
+	AND ran_idepcc = ws_ide_pcc
+	AND ran_keyusu = wn_key_usu ) LOOP
+		ws_lis_nom :=c_lis_nom.ran_keycat;
+			wn_cic_los:=0;
+	END LOOP;
+	wn_ant_nom:=wn_mov_nom;
+	ws_des_nom:= SUBSTR(ws_des_not,1,20);
+	END IF;
+		END IF;
+	IF (wn_dsp_001=1 ) THEN
+	wn_mov_pro:=Null;
+	END IF;
+	IF (wn_dsp_002=1 ) THEN
+	ws_mov_per:=Null;
+	END IF;
+	IF (wn_dsp_003=1 ) THEN
+	ws_mov_con:=Null;
+	END IF;
+	IF (wn_dsp_004=1 ) THEN
+	wn_tot_can:=Null;
+	END IF;
+	IF (wn_dsp_005=1 ) THEN
+	wn_tot_imp:=Null;
+	END IF;
+	IF (wn_dsp_006=1 ) THEN
+	ws_mov_dep:=Null;
+	END IF;
+	IF (wn_tot_can IS NULL ) THEN
+	wn_tot_can:=0;
+	END IF;
+	IF (wn_tot_imp IS NULL ) THEN
+	wn_tot_imp:=0;
+	END IF;
+	IF ((wn_tot_can != 0) OR (wn_tot_imp != 0) ) THEN
+	INSERT INTO LABCONF.glwkcrys( cry_nomrep,cry_idepcc,cry_keyusu,cry_chr001,cry_chr003,cry_chr004,cry_chr017,cry_chr018,cry_chr019,cry_chr010,  cry_chr011, cry_chr022,cry_chr024,cry_chr025,cry_chr005,cry_dec001,cry_dec002,cry_dec006,cry_chr026,cry_dec008,cry_dec009,cry_dat001,cry_dat002,cry_dat003,cry_chr027, cry_chr002, cry_chr028, cry_chr009,cry_dec010,cry_chr006,cry_chr007,cry_chr008,cry_chr012,cry_dec007,cry_chr014, cry_chr015,cry_dec011,cry_dec012)
+		VALUES(ws_nom_rep,ws_ide_pcc,wn_key_usu,ws_des_cia,ws_des_lis,ws_des_nom,ws_etq_001,ws_etq_002,ws_etq_003,ws_etq_004,ws_etq_005,ws_etq_006,ws_hor_act,ws_ant_con,ws_des_con,wn_tot_can,wn_tot_imp,wn_mov_pro,ws_mov_per,wn_mov_nom,wn_con_tar,wd_fec_ini,wd_fec_fin,ws_dia_act,ws_ant_cod,ws_lis_per,ws_mov_cia,ws_etq_007,wn_mov_emp,ws_lis_pro,ws_des_dep,ws_des_pro,ws_lis_nom,wn_mov_emp,ws_ant_dep,ws_etq_008,wn_sum_pro,wn_sum_per); COMMIT;
+		END IF;
+	END LOOP;
+	ws_hor_act:=ws_hor_act;
+	UPDATE LABCONF.glcoresu SET  res_numreg=wn_num_reg,res_fecfin=ws_dia_act,res_horfin=ws_hor_act, res_status ='T'
+	WHERE res_idepro = ws_nom_rep
+	AND res_idepcc = ws_ide_pcc
+	AND res_keyusu = wn_key_usu
+	AND res_fecini = ws_dia_act
+	AND res_horreg = ws_hor_reg; COMMIT;
+END;
+/
