@@ -1,0 +1,1 @@
+CREATE INDEX fecxp_ctas_clasif_ppto_erp03 ON fecxc."fecxp_ctas_clasif_ppto_erp" (oracle_segmento1,oracle_segmento2,oracle_segmento3,oracle_segmento4,oracle_segmento5,oracle_segmento6,oracle_segmento7);

@@ -1,0 +1,33 @@
+-- dmap_object_gen_tag : type : table name : bitacora_forecast_ns
+set search_path = fecxc,oracle,dmap_extension,public;
+create table "bitacora_forecast_ns"  (
+fecha_creacion timestamp(0),
+ver_ene_hist numeric(38),
+ver_feb_hist numeric(38),
+ver_mar_hist numeric(38),
+ver_abr_hist numeric(38),
+ver_may_hist numeric(38),
+ver_jun_hist numeric(38),
+ver_jul_hist numeric(38),
+ver_ago_hist numeric(38),
+ver_sep_hist numeric(38),
+ver_oct_hist numeric(38),
+ver_nov_hist numeric(38),
+ver_dic_hist numeric(38),
+ver_ene_ns numeric(38),
+ver_feb_ns numeric(38),
+ver_mar_ns numeric(38),
+ver_abr_ns numeric(38),
+ver_may_ns numeric(38),
+ver_jun_ns numeric(38),
+ver_jul_ns numeric(38),
+ver_ago_ns numeric(38),
+ver_sep_ns numeric(38),
+ver_oct_ns numeric(38),
+ver_nov_ns numeric(38),
+ver_dic_ns numeric(38),
+ppto_hist numeric(38),
+ppto_ns numeric(38),
+comentario varchar(250),
+usuario varchar(60)
+) ;

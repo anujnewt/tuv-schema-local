@@ -1,0 +1,31 @@
+-- dmap_object_gen_tag : type : table name : plan_table
+set search_path = fecxc,oracle,dmap_extension,public;
+create table "plan_table"  (
+statement_id varchar(30),
+timestamp timestamp(0),
+remarks varchar(80),
+operation varchar(30),
+options varchar(255),
+object_node varchar(128),
+object_owner varchar(30),
+object_name varchar(30),
+object_instance numeric(38),
+object_type varchar(30),
+optimizer varchar(255),
+search_columns numeric,
+id numeric(38),
+parent_id numeric(38),
+position numeric(38),
+cost numeric(38),
+cardinality numeric(38),
+bytes numeric(38),
+other_tag varchar(255),
+partition_start varchar(255),
+partition_stop varchar(255),
+partition_id numeric(38),
+other text,
+distribution varchar(30),
+cpu_cost numeric(38),
+io_cost numeric(38),
+temp_space numeric(38)
+) ;

@@ -1,0 +1,1 @@
+CREATE INDEX fecxp_bit_cont_din_aper_det_01 ON fecxc."fecxp_bit_cont_din_aper_det" (e_codigo,secuencia_pagos_erp,secuencia_cont_din_aper_det);

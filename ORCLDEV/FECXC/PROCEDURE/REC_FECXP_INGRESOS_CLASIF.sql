@@ -1,0 +1,6 @@
+-- dmap_object_gen_tag : type : procedure name : rec_fecxp_ingresos_clasif;
+set search_path = fecxc,oracle,dmap_extension,public;
+drop type  if exists rec_fecxp_ingresos_clasif;
+-- dmap_object_gen_tag : type : procedure name : FECXC.rec_fecxp_ingresos_clasif
+set search_path = fecxc,oracle,dmap_extension,public;
+create type FECXC.rec_fecxp_ingresos_clasif as (cla_fe_id           varchar(25),e_codigo            integer,folio_set           integer,tipo_operacion      integer,fecha               timestamp(0),moneda              varchar(3),tipo_cambio         decimal(20,11),importe             decimal(20,2),concepto            varchar(100),beneficiario        varchar(60),id_status_mov       varchar(1),id_chequera         varchar(20),id_banco            integer,id_forma_pago       integer,referencia          varchar(30),importe_linea       decimal(20,4),ora_soin_segmento1  varchar(25),ora_soin_segmento2  varchar(25),ora_soin_segmento3  varchar(25),oracle_segmento4    varchar(25),oracle_segmento5    varchar(25),oracle_segmento6    varchar(25),oracle_segmento7    varchar(25),cual_erp            varchar(1),tipo_clasificacion  varchar(20),no_cliente          varchar(15),descripcion         varchar(30));
