@@ -1,0 +1,15 @@
+CREATE OR REPLACE FORCE NONEDITIONABLE VIEW "USRDRC"."DERCORP_CAT_PERSONAS_TOTAL_VW" ("ID_CATALOGO_VALOR", "ID_CATALOGO", "NOMBRE") AS 
+  SELECT  AC.ID_CATALOGO_VALOR,
+        AC.ID_CATALOGO,
+        TRIM(AC.VAL_CAT_VAL) AS NOMBRE
+FROM    DERCORP_ADD_CAMPO_CAT_VAL_TAB AC
+WHERE   1=1
+AND     AC.ID_CATALOGO IN (10/*,40*/,32,56,57)
+AND     AC.VAL_CAT_VAL NOT IN(
+                              SELECT    DS.VAL_CAT_VAL
+                              FROM      DERCORP_ADD_CAMPO_CAT_VAL_TAB DS
+                              WHERE     1=1
+                              AND       DS.ID_CATALOGO = 1
+                              AND       AC.VAL_CAT_VAL = DS.VAL_CAT_VAL
+)
+ORDER BY AC.VAL_CAT_VAL;
