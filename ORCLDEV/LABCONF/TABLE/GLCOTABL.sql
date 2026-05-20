@@ -1,0 +1,6 @@
+-- dmap_object_gen_tag : type : table name : glcotabl
+set search_path = labconf,oracle,dmap_extension,public;
+create table "glcotabl"  (
+tab_keytab varchar(18),
+tab_destab varchar(50)
+) ;
