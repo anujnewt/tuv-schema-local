@@ -1,0 +1,4 @@
+-- dmap_object_gen_tag : type : view name : comp_personal2
+set search_path = pppt,oracle,dmap_extension,public;/* dmap converted statement start */
+create or replace view "comp_personal2"  ("idcomparacion", "idpersonal", "nombre", "idpuesto0", "idpuesto1", "idpuesto2", "idpuesto3", "idpuesto4", "idpuesto5", "idpuesto6", "idpuesto7", "idpuesto8", "idpuesto9") as select comparacionpersonal.idcomparacion,  personal.idpersonal,  personal.nombre,  comparacionpersonal.idpuesto0,  comparacionpersonal.idpuesto1,  comparacionpersonal.idpuesto2,  comparacionpersonal.idpuesto3,  comparacionpersonal.idpuesto4,  comparacionpersonal.idpuesto5,  comparacionpersonal.idpuesto6,  comparacionpersonal.idpuesto7,  comparacionpersonal.idpuesto8,  comparacionpersonal.idpuesto9  from comparacionpersonal inner join personal on comparacionpersonal.idpersonal = personal.idpersonal;/* dmap converted statement end */
+-- estimed cost of view [ comp_personal2 ]: 1.00;

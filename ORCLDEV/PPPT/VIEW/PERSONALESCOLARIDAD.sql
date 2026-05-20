@@ -1,0 +1,4 @@
+-- dmap_object_gen_tag : type : view name : personalescolaridad
+set search_path = pppt,oracle,dmap_extension,public;/* dmap converted statement start */
+create or replace view "personalescolaridad"  ("idpersonal", "grado", "escolaridad", "idespecialidad", "especialidad", "escuela", "ubicacion", "sino", "de", "a", "titulo", "actual") as select escolaridad.idpersonal,  escolaridad.grado,  catescolaridad.escolaridad,  escolaridad.especialidad as idespecialidad,  catespecialidad.especialidad,  escolaridad.escuela,  escolaridad.ubicacion,  sino.sino,  escolaridad.de,  escolaridad.a,  escolaridad.titulo,  escolaridad.actual  from (catespecialidad right join(catescolaridad inner join escolaridad on catescolaridad.idescolaridad = escolaridad.grado) on catespecialidad.idespecialidad = escolaridad.especialidad) inner join sino on escolaridad.titulo = sino.idsino;/* dmap converted statement end */
+-- estimed cost of view [ personalescolaridad ]: 1.00;

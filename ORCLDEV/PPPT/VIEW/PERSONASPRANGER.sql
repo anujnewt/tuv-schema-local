@@ -1,0 +1,6 @@
+-- dmap_object_gen_tag : type : view name : personaspranger
+set search_path = pppt,oracle,dmap_extension,public;/* dmap converted statement start */
+create or replace view "personaspranger"  ("idpersonal", "interpretacion", "interpretacion1", "interpretacion2", "interpretacion3", "nombre", "nombre1", "nombre2", "nombre3") as select personalinterpretacion.idpersonal,  interpretacion.interpretacion,  interpretacion_1.interpretacion as interpretacion1,  interpretacion_2.interpretacion as interpretacion2,  interpretacion_3.interpretacion as interpretacion3,  interpretacion.nombre,  interpretacion_1.nombre as nombre1,  interpretacion_2.nombre as nombre2,  interpretacion_3.nombre as nombre3
+from (((personalinterpretacion left join interpretacion on personalinterpretacion.idinterpretacion1 = interpretacion.idinterpretacion) left join interpretacion interpretacion_1 on personalinterpretacion.idinterpretacion2 = interpretacion_1.idinterpretacion) left join interpretacion interpretacion_2 on personalinterpretacion.idinterpretacion3 = interpretacion_2.idinterpretacion) left join interpretacion interpretacion_3 on personalinterpretacion.idinterpretacion4 = interpretacion_3.idinterpretacion
+where (((personalinterpretacion.idprueba)=4));/* dmap converted statement end */
+-- estimed cost of view [ personaspranger ]: 1.00;
