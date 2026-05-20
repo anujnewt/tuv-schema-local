@@ -1,0 +1,3 @@
+-- dmap_object_gen_tag : type : type name : USRDRC.ss_login_pkg_user_info_typ
+set search_path = usrdrc,oracle,dmap_extension,public;
+create type USRDRC.ss_login_pkg_user_info_typ as (user_id                   numeric         :=null,user_long_name            varchar(100)  :=null,username                  varchar(30)   :=null,real_password             varchar(255)  :=null,status_id                 numeric         :=null,rol_id                    numeric         :=null,rol_name                  varchar(20)   :=null,rol_description           varchar(100)  :=null,password_expiration_days  numeric         :=null);

@@ -1,0 +1,30 @@
+create or replace  function  usrdrc.app_common_pkg_sin_acentos_fn (pisttext varchar) returns varchar as $body$
+declare
+-- pgv moved types start
+-- pgv moved types end
+listtext varchar(3000);
+begin
+-- package does not have global variables
+--dmap conversion comment: gtt declaration added
+listtext := pisttext;
+listtext := replace(listtext,'A','A');
+listtext := replace(listtext,'E','E');
+listtext := replace(listtext,'I','I');
+listtext := replace(listtext,'O','O');
+listtext := replace(listtext,'U','U');
+listtext := replace(listtext,'a','a');
+listtext := replace(listtext,'e','e');
+listtext := replace(listtext,'i','i');
+listtext := replace(listtext,'o','o');
+listtext := replace(listtext,'u','u');
+listtext := replace(listtext,'?!','a');
+listtext := replace(listtext,'??','e');
+listtext := replace(listtext,'?-','i');
+listtext := replace(listtext,'??','o');
+listtext := replace(listtext,'??','u');
+--listtext := replace(listtext,?,n);
+--listtext := replace(listtext,?,n);
+return listtext;end;
+$body$
+language plpgsql
+;

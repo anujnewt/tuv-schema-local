@@ -1,0 +1,46 @@
+-- dmap_object_gen_tag : type : table name : dercorp_con_adm_vig_tmp
+set search_path = usrdrc,oracle,dmap_extension,public;
+create table "dercorp_con_adm_vig_tmp"  (
+id_meta_row numeric not null,
+id_flex_tbl numeric,
+id_empresa numeric,
+val_c1 varchar(3000),
+val_c2 varchar(3000),
+val_c3 varchar(3000),
+val_c4 varchar(3000),
+val_c5 varchar(3000),
+val_c6 varchar(3000),
+val_c7 varchar(3000),
+val_c8 varchar(3000),
+val_c9 varchar(3000),
+val_c10 varchar(3000),
+val_c11 varchar(3000),
+val_c12 varchar(3000),
+val_c13 varchar(3000),
+val_c14 varchar(3000),
+val_c15 varchar(3000),
+num_created_by numeric(15),
+fec_creation_date timestamp(0),
+num_last_updated_by numeric(15),
+fec_last_update_date timestamp(0),
+num_last_update_login numeric(15),
+atributo1 varchar(250),
+atributo2 varchar(250),
+atributo3 varchar(250),
+atributo4 varchar(250),
+atributo5 varchar(250),
+atributo6 varchar(250),
+atributo7 varchar(250),
+atributo8 varchar(250),
+atributo9 varchar(250),
+atributo10 varchar(250),
+atributo11 varchar(250),
+atributo12 varchar(250),
+atributo13 varchar(250),
+atributo14 varchar(250),
+atributo15 varchar(250),
+attribute_category varchar(250)
+) ;
+-- dmap_object_gen_tag : type : alter table name : dercorp_con_adm_vig_tmp
+set search_path = usrdrc,oracle,dmap_extension,public;
+alter table dercorp_con_adm_vig_tmp alter column id_meta_row set not null;
