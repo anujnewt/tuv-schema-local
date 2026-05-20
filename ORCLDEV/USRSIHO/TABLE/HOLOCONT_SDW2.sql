@@ -1,0 +1,45 @@
+-- dmap_object_gen_tag : type : table name : holocont_sdw2
+set search_path = usrsiho,oracle,dmap_extension,public;
+create table "holocont_sdw2"  (
+estatus varchar(1),
+consec numeric(10) not null,
+fecha timestamp(0),
+con_keyplz numeric(10),
+con_keyfol numeric(10),
+con_keytco numeric(10),
+con_keydep varchar(16),
+con_keypue varchar(16),
+con_ctvplz numeric(10),
+con_keyemp numeric(10),
+con_regrfc varchar(13),
+con_preano numeric(10),
+con_numcap numeric(10),
+con_fecoto timestamp(0),
+con_fecini timestamp(0),
+con_fecven timestamp(0),
+con_keytab varchar(6),
+con_pertra varchar(6),
+con_idioma varchar(6),
+con_keynac varchar(6),
+con_cosuni decimal(13, 2),
+con_despev varchar(80),
+con_keytva numeric(10),
+con_keytic varchar(6),
+con_diapag varchar(60),
+con_tmpsal varchar(80),
+con_araesp varchar(60),
+con_stsfir varchar(1),
+con_stsplz varchar(1),
+con_stspag varchar(1),
+con_fecfir timestamp(0),
+con_feccan timestamp(0),
+con_numcdi numeric(10),
+con_recfis varchar(1),
+con_descap varchar(80),
+con_keyusg numeric(10),
+con_contra varchar(20),
+con_hrsjor varchar(5)
+) ;
+-- dmap_object_gen_tag : type : alter table name : holocont_sdw2
+set search_path = usrsiho,oracle,dmap_extension,public;
+alter table holocont_sdw2 alter column consec set not null;

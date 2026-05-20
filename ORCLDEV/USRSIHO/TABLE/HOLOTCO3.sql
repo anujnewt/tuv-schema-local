@@ -1,0 +1,33 @@
+-- dmap_object_gen_tag : type : table name : holotco3
+set search_path = usrsiho,oracle,dmap_extension,public;
+create table "holotco3"  (
+con_idepcc varchar(15),
+con_keyusu numeric(10),
+emp_nomemp varchar(60),
+con_keyemp numeric(10),
+con_keyfol numeric(10),
+emp_nomcor varchar(40),
+emp_domemp varchar(102),
+emp_colemp varchar(20),
+emp_codemp varchar(5),
+con_delega varchar(40),
+con_desnac varchar(30),
+emp_regrfc varchar(13),
+dep_desdep varchar(40),
+con_despev varchar(80),
+con_tmpsal varchar(80),
+pue_despue varchar(40),
+con_cosuni decimal(13, 2),
+con_cosun2 varchar(80),
+con_keytic varchar(40),
+con_fecini timestamp(0),
+con_descap varchar(80),
+con_araesp varchar(60),
+emp_homo varchar(3),
+con_keydep varchar(16),
+con_keypue varchar(16),
+con_fecoto timestamp(0),
+con_contra varchar(20),
+con_hrsjor varchar(5),
+emp_recurp varchar(18)
+) ;

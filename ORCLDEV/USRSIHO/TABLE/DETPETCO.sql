@@ -1,0 +1,30 @@
+-- dmap_object_gen_tag : type : table name : detpetco
+set search_path = usrsiho,oracle,dmap_extension,public;
+create table "detpetco"  (
+dpc_numpco numeric(10),
+dpc_idereg numeric(10),
+dpc_keyemp numeric(10),
+dpc_nomart varchar(40),
+dpc_clasif varchar(16),
+dpc_descla varchar(50),
+dpc_tabulador decimal(12, 2),
+dpc_sindicato varchar(12),
+dpc_siscon varchar(1),
+dpc_fecgra timestamp(0),
+dpc_nomreal varchar(60),
+dpc_person varchar(40),
+dpc_numcap varchar(60),
+dpc_tabulade numeric(10),
+dpc_padiftab numeric(5),
+dpc_totcap numeric(10),
+dpc_conjunto varchar(100),
+dpc_nacion varchar(20),
+dpc_idioma varchar(20),
+dpc_tipval numeric(10),
+dpc_keyfol numeric(10),
+dpc_feccap timestamp(0),
+dpc_stsreg numeric(10),
+dpc_tipopago numeric(10),
+dpc_docfis varchar(20),
+dpc_numllama numeric(5)
+) ;
